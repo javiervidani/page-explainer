@@ -36,12 +36,12 @@ function createMcpServer() {
         };
       } catch (err) {
         // Known errors (400/408/429) carry their own message. For anything else the caller
-        // (already authenticated) gets the first line of the error, which is enough to diagnose
+        // (already authenticated) gets the error text (one line, capped), which is enough to diagnose
         // server problems such as a missing browser; the full error goes to the server log.
         let message = err.message;
         if (!err.status) {
           console.error('explain_page failed:', err.message);
-          message = `Failed to load the page: ${String(err.message).split('\n')[0].slice(0, 300)}`;
+          message = `Failed to load the page: ${String(err.message).split('\n').map((l) => l.trim()).filter(Boolean).join(' | ').slice(0, 900)}`;
         }
         return { isError: true, content: [{ type: 'text', text: message }] };
       }
