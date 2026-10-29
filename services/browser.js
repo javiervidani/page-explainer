@@ -46,7 +46,10 @@ async function closeBrowser() {
 }
 
 // Opens `rawUrl` and returns { text, screenshotFile, finalUrl }.
-async function capturePage(rawUrl) {
+// `stats` (optional) is filled in as we go: bytesDownloaded, requests, screenshotBytes.
+async function capturePage(rawUrl, stats = {}) {
+  stats.bytesDownloaded = 0;
+  stats.requests = 0;
   const startUrl = await assertSafeUrl(rawUrl);
   const browser = await getBrowser();
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
@@ -62,6 +65,12 @@ async function capturePage(rawUrl) {
       return verdicts.get(host);
     };
 
+    // Bandwidth: every response body passes through us, so we can count what was downloaded.
+    const countBytes = async (response) => {
+      stats.bytesDownloaded += (await response.body()).length;
+      stats.requests++;
+    };
+
     await context.route('**/*', async (route) => {
       const req = route.request();
       const isMainNav = req.isNavigationRequest() && req.frame() === page.mainFrame();
@@ -70,6 +79,7 @@ async function capturePage(rawUrl) {
       try {
         if (!(await isSafe(req.url()))) throw new UrlError('Blocked address');
         let response = await route.fetch({ maxRedirects: 0 });
+        await countBytes(response);
         for (let hop = 0; hop < MAX_REDIRECTS && isRedirect(response); hop++) {
           const next = new URL(response.headers()['location'], response.url()).href;
           if (!(await isSafe(next))) throw new UrlError('Redirect to a blocked address');
@@ -78,6 +88,7 @@ async function capturePage(rawUrl) {
             return await route.fulfill({ status: 200, contentType: 'text/html', body: '' });
           }
           response = await route.fetch({ url: next, maxRedirects: 0 });
+          await countBytes(response);
         }
         return await route.fulfill({ response });
       } catch (err) {
@@ -113,7 +124,10 @@ async function capturePage(rawUrl) {
 
     const screenshotFile = `${crypto.randomUUID()}.png`;
     await fs.mkdir(SHOTS_DIR, { recursive: true });
-    await page.screenshot({ path: path.join(SHOTS_DIR, screenshotFile), fullPage: true });
+    if (stats.sample) stats.sample(); // memory is usually highest just before the screenshot
+    const shotPath = path.join(SHOTS_DIR, screenshotFile);
+    await page.screenshot({ path: shotPath, fullPage: true });
+    stats.screenshotBytes = (await fs.stat(shotPath)).size;
 
     return { text, screenshotFile, finalUrl: page.url() };
   } finally {

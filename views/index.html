@@ -39,6 +39,9 @@
     <label for="pw">Admin password</label>
     <input id="pw" type="password" autocomplete="current-password" required>
 
+    <label for="label">Name or purpose (optional, shown in the usage log)</label>
+    <input id="label" type="text" maxlength="40" placeholder="e.g. Dana, team test">
+
     <label for="days">Key expires in</label>
     <select id="days">
       <option value="1">1 day</option>
@@ -57,7 +60,12 @@
         <button type="button" class="secondary" id="copy">Copy</button>
       </div>
       <p class="note">Expires: <span id="exp"></span></p>
-      <p class="note">MCP URL: <code id="url"></code><br>Send the key as the <code>x-api-key</code> header (or <code>Authorization: Bearer</code>).</p>
+      <p class="note"><strong>Connector URL</strong> (for connector screens that only take a URL, such as Claude.ai). It contains the key, so keep it private:</p>
+      <div class="keyrow">
+        <input id="conn" readonly aria-label="Connector URL">
+        <button type="button" class="secondary" id="copyconn">Copy</button>
+      </div>
+      <p class="note">Clients that can set headers: use <code id="url"></code> and send the key as <code>x-api-key</code> or <code>Authorization: Bearer</code>.</p>
     </div>
   </form>
 </main>
@@ -74,11 +82,12 @@
       const res = await fetch('/admin/keys', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ password: $('pw').value, days: Number($('days').value) }),
+        body: JSON.stringify({ password: $('pw').value, days: Number($('days').value), label: $('label').value }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Request failed');
       $('key').value = data.key;
+      $('conn').value = location.origin + '/mcp?key=' + encodeURIComponent(data.key);
       $('exp').textContent = new Date(data.expiresAt).toLocaleString();
       $('result').classList.add('show');
       $('pw').value = '';
@@ -89,12 +98,17 @@
     }
   });
 
-  $('copy').addEventListener('click', async () => {
-    $('key').select();
-    try { await navigator.clipboard.writeText($('key').value); $('copy').textContent = 'Copied'; }
-    catch { document.execCommand('copy'); }
-    setTimeout(() => { $('copy').textContent = 'Copy'; }, 1500);
-  });
+  // Copy buttons: put the text of an input on the clipboard.
+  function wireCopy(buttonId, inputId) {
+    $(buttonId).addEventListener('click', async () => {
+      $(inputId).select();
+      try { await navigator.clipboard.writeText($(inputId).value); $(buttonId).textContent = 'Copied'; }
+      catch { document.execCommand('copy'); }
+      setTimeout(() => { $(buttonId).textContent = 'Copy'; }, 1500);
+    });
+  }
+  wireCopy('copy', 'key');
+  wireCopy('copyconn', 'conn');
 </script>
 </body>
 </html>

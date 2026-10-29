@@ -34,10 +34,23 @@ const safeEqual = (a, b) => {
 
 function requireApiKey(req, res, next) {
   const master = process.env.API_KEY;
-  if (!master && !process.env.ADMIN_PASSWORD) return next();
+  if (!master && !process.env.ADMIN_PASSWORD) {
+    req.keyInfo = { id: 'open', label: '' };
+    return next();
+  }
+  // Accepted places: x-api-key header, Bearer token, or ?key= in the URL (for connector
+  // screens that only take a URL; the key then shows up in access logs, so keep keys short-lived).
   const bearer = (req.get('authorization') || '').replace(/^Bearer\s+/i, '');
-  const given = req.get('x-api-key') || bearer;
-  if (given && ((master && safeEqual(given, master)) || verifyKey(given))) return next();
+  const given = req.get('x-api-key') || bearer || (typeof req.query.key === 'string' ? req.query.key : '');
+  if (given && master && safeEqual(given, master)) {
+    req.keyInfo = { id: 'master', label: 'master' };
+    return next();
+  }
+  const info = verifyKey(given);
+  if (info) {
+    req.keyInfo = info;
+    return next();
+  }
   res.status(401).json({ error: 'Unauthorized' });
 }
 
@@ -66,17 +79,19 @@ app.post('/admin/keys', adminLimiter, (req, res) => {
   const admin = process.env.ADMIN_PASSWORD;
   if (!admin) return res.status(503).json({ error: 'Key generation is not enabled on this server' });
   const { password, days } = req.body || {};
+  // Optional label: who the key is for. Shown in the usage log.
+  const label = String(req.body?.label || '').replace(/[^\p{L}\p{N} ._@-]/gu, '').trim().slice(0, 40);
   if (typeof password !== 'string' || !safeEqual(password, admin)) {
     return res.status(401).json({ error: 'Wrong password' });
   }
   if (!ALLOWED_DAYS.includes(days)) return res.status(400).json({ error: 'Invalid expiry' });
   res.set('Cache-Control', 'no-store');
-  res.json(createKey(days));
+  res.json(createKey(days, label));
 });
 
 // MCP over Streamable HTTP, stateless: a fresh server + transport per request.
 app.post('/mcp', limiter, requireApiKey, async (req, res) => {
-  const server = createMcpServer();
+  const server = createMcpServer({ keyLabel: req.keyInfo.label || req.keyInfo.id, ip: req.get('cf-connecting-ip') || req.ip });
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
   res.on('close', () => {
     transport.close();

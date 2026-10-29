@@ -41,11 +41,28 @@ curl -X POST http://localhost:3000/mcp \
 
 ## API keys with expiry
 
-Open the main page (`/`), enter the admin password, choose 1, 7, 30 or 90 days and
-click **Generate key**. The key is shown once; only its hash is stored in
+Open the main page (`/`), enter the admin password, optionally a name (it appears in the usage log),
+choose 1, 7, 30 or 90 days and click **Generate key**. The page also shows a **connector URL**
+(`/mcp?key=...`) for connector screens that only take a URL; it contains the key, so keep it private. The key is shown once; only its hash is stored in
 `data/keys.json` (git-ignored). Expired keys stop working immediately. The
 permanent `API_KEY` env var, if set, keeps working. Wrong-password attempts are
 limited to 10 per hour per IP.
+
+## Usage log (CPU, memory, bandwidth)
+
+Every `explain_page` call writes one line to the console and to `data/usage-YYYY-MM-DD.jsonl`
+(kept 30 days by `scripts/cleanup.js`). Fields: `key` (the label), `ip`, `target` (host and path),
+`status`, `totalMs`, `queueMs`, `jobMs`, `cpuBrowserMs` (Chromium and its helpers), `cpuNodeMs`,
+`peakBrowserMb` (PSS, sampled twice a second), `peakNodeMb`, `concurrent`, `bytesDownloaded`
+(from the target site, decoded size), `requests`, `screenshotBytes`, `bytesToClient`.
+
+```bash
+node scripts/usage-report.js 7     # totals per key for the last 7 days
+```
+
+CPU and memory come from `/proc`, so they exist on Linux only (otherwise they are `null`).
+The browser is shared: when two calls overlap (`concurrent` above 1) their CPU and memory figures
+overlap too, so totals are slightly too high.
 
 ## Environment variables
 
@@ -108,10 +125,14 @@ services/browser.js  Playwright: open page, extract text, screenshot
 services/keys.js    Generated API keys with expiry
 services/queue.js    Concurrency limiter (2 running, 10 waiting)
 scripts/check-deploy.sh Waits until the server runs the expected version
-scripts/cleanup.js   Removes screenshots older than 24 h
+scripts/usage-report.js Summarises the usage log per key
+scripts/cleanup.js   Removes screenshots older than 24 h and usage logs older than 30 days
+services/usage.js    Measures and logs CPU, memory, bandwidth per call
 ```
 
 ## Next phase
+
+See `BACKLOG.md` for the full plan. Next after team testing:
 
 REST `POST /explain` with `services/llm.js` (provider still to be chosen),
 returning `{ explanation, screenshotUrl }`.

@@ -37,4 +37,6 @@ async function enqueue(job) {
   }
 }
 
-module.exports = { enqueue, QueueFullError };
+const getRunning = () => running;
+
+module.exports = { enqueue, getRunning, QueueFullError };
