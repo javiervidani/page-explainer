@@ -64,7 +64,7 @@ Never commit `.env`.
 
 ## Deploy on Plesk (IONOS)
 
-1. Upload the project; in **Node.js**, set the application root and startup file `app.js`, then **NPM install**.
+1. Connect the repo in Plesk **Git**; under *Enable post deployment actions* enter `bash deploy.sh` (installs dependencies and Chromium, then restarts the app). In **Node.js**, set the application root and startup file `app.js`.
 2. Over SSH as root, once: `npx playwright install --with-deps chromium`
    (run it as the same user as the app, or set `PW_CHROMIUM_PATH`).
 3. In the Node.js panel add environment variables: `PUBLIC_BASE_URL`, `API_KEY`, and `PW_NO_SANDBOX=1` only if needed.
@@ -75,6 +75,7 @@ Never commit `.env`.
 ## Project layout
 
 ```
+deploy.sh            Plesk post-deployment script
 app.js               Express entry: /health, /shots, /mcp
 mcp/server.js        MCP server and the explain_page tool
 services/urlGuard.js URL validation and SSRF protection
