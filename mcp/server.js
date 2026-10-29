@@ -35,9 +35,14 @@ function createMcpServer() {
           }],
         };
       } catch (err) {
-        // Known errors (400/408/429) carry a safe message; hide details of anything else.
-        const message = err.status ? err.message : 'Failed to load the page';
-        if (!err.status) console.error('explain_page failed:', err.message);
+        // Known errors (400/408/429) carry their own message. For anything else the caller
+        // (already authenticated) gets the first line of the error, which is enough to diagnose
+        // server problems such as a missing browser; the full error goes to the server log.
+        let message = err.message;
+        if (!err.status) {
+          console.error('explain_page failed:', err.message);
+          message = `Failed to load the page: ${String(err.message).split('\n')[0].slice(0, 300)}`;
+        }
         return { isError: true, content: [{ type: 'text', text: message }] };
       }
     }

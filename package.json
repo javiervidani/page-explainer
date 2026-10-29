@@ -1,6 +1,6 @@
 {
   "name": "page-explainer",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "web page URL. Output: an LLM-written explanation of the page plus a screenshot of it",
   "main": "app.js",
   "scripts": {
