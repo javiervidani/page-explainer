@@ -41,7 +41,7 @@ function createMcpServer() {
         let message = err.message;
         if (!err.status) {
           console.error('explain_page failed:', err.message);
-          message = `Failed to load the page: ${String(err.message).split('\n').map((l) => l.trim()).filter(Boolean).join(' | ').slice(0, 900)}`;
+          message = `Failed to load the page: ${String(err.message).split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('<launching>')).join(' | ').slice(0, 900)}`;
         }
         return { isError: true, content: [{ type: 'text', text: message }] };
       }
