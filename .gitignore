@@ -1,5 +1,6 @@
 node_modules/
 .env
 public/shots/*.png
+public/shots/*.jpg
 data/
 .deployed-at

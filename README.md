@@ -6,12 +6,20 @@ page's visible text plus a link to a full-page screenshot. The calling model
 (Claude, GPT, ...) writes the explanation itself, so **no LLM API key is needed**
 in this phase.
 
-## Tool
+## Tools
 
-`explain_page({ url })` returns text containing the final URL, a screenshot URL
-(`/shots/<uuid>.png`) and the page text (capped at ~20,000 characters).
-Errors come back as MCP tool errors: invalid or blocked URL (400), page timeout
-after 30 s (408), queue full (429), or a generic failure.
+| Tool | What it does |
+|---|---|
+| `explain_page({ url, viewport?, fullPage? })` | Visible text (about 20,000 characters) plus a link to a screenshot. `viewport` is `desktop` (1280x800, default) or `mobile` (390x844). `fullPage: false` shoots only the visible screen. |
+| `page_outline({ url, viewport? })` | The regions of the page (header, navigation, sidebars, main, footer, forms, or the big layout blocks when the page has few landmarks). Each has a label, a CSS `selector`, its `box` in page pixels and a text snippet. Also the headings, buttons, page size and text direction (`rtl` for Hebrew or Arabic). |
+| `capture_area({ url, selector? , region?, viewport?, fullPage? })` | One area of the page as an **inline JPEG image** the model can see, plus the text inside that area. Choose it with a CSS selector (from `page_outline`) or a `region` `{ x, y, width, height }` in page pixels. With neither you get the visible screen. Areas taller than 2000 px are cut, and the reply says which `region` to request next. A copy is saved under `/shots/<uuid>.jpg`. |
+
+Typical use: `page_outline` first, then `capture_area` on the part you want explained.
+Each call opens the page again. Pages behind a login are not supported, and content inside
+iframes or shadow DOM may not appear in the outline.
+
+Errors come back as MCP tool errors: invalid or blocked URL, bad selector or area (400),
+page timeout after 30 s (408), queue full (429), or a generic failure.
 
 Also: `GET /health` returns `{ "ok": true }`.
 
@@ -52,9 +60,9 @@ limited to 10 per hour per IP.
 
 Every `explain_page` call writes one line to the console and to `data/usage-YYYY-MM-DD.jsonl`
 (kept 30 days by `scripts/cleanup.js`). Fields: `key` (the label), `ip`, `target` (host and path),
-`status`, `totalMs`, `queueMs`, `jobMs`, `cpuBrowserMs` (Chromium and its helpers), `cpuNodeMs`,
+`tool`, `status`, `totalMs`, `queueMs`, `jobMs`, `cpuBrowserMs` (Chromium and its helpers), `cpuNodeMs`,
 `peakBrowserMb` (PSS, sampled twice a second), `peakNodeMb`, `concurrent`, `bytesDownloaded`
-(from the target site, decoded size), `requests`, `screenshotBytes`, `bytesToClient`.
+(from the target site, decoded size), `requests`, `screenshotBytes`, `bytesToClient` (reply size, including an inline image).
 
 ```bash
 node scripts/usage-report.js 7     # totals per key for the last 7 days
@@ -119,9 +127,9 @@ Without the webhook, click **Pull Updates** in Plesk after each push.
 deploy.sh            Plesk post-deployment script
 app.js               Express entry: /, /admin/keys, /health, /shots, /mcp
 views/index.html    Main page (key generator)
-mcp/server.js        MCP server and the explain_page tool
+mcp/server.js        MCP server and its three tools
 services/urlGuard.js URL validation and SSRF protection
-services/browser.js  Playwright: open page, extract text, screenshot
+services/browser.js  Playwright: safe page opening; text, outline, area capture
 services/keys.js    Generated API keys with expiry
 services/queue.js    Concurrency limiter (2 running, 10 waiting)
 scripts/check-deploy.sh Waits until the server runs the expected version

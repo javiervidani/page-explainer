@@ -9,6 +9,7 @@ Order is roughly the order I would do things. Update the status as work moves.
 - [x] Main page: generate expiring API keys (1, 7, 30 or 90 days) behind an admin password
 - [x] Team testing: key label per person, connector URL (`/mcp?key=...`) for URL-only connector screens
 - [x] Usage log per call: CPU, memory, bandwidth (`data/usage-*.jsonl`, `node scripts/usage-report.js`)
+- [x] Explain parts of a page: `page_outline` (regions with selectors and positions, headings, buttons, RTL detection) and `capture_area` (one area by CSS selector or pixel region, returned as an inline image plus the text inside it); `explain_page` got `viewport` (desktop or mobile) and `fullPage` options
 
 ## Now: team testing (Claude connector)
 - [ ] Set `PUBLIC_BASE_URL` in Plesk so screenshot links are absolute
@@ -16,6 +17,13 @@ Order is roughly the order I would do things. Update the status as work moves.
 - [ ] Add the connector in Claude.ai (Settings > Connectors > Add custom connector) with the connector URL, and confirm tools show up and a page gets explained. Not verified yet: Claude.ai may behave differently from the plain HTTP clients I tested.
 - [ ] Each team member gets their own labelled, short-lived key
 - [ ] Read the usage report after a few days and decide limits (see "Cost and abuse controls")
+
+## Page parts (follow-ups)
+- [ ] Short cache (about 60 seconds per URL and key) so `page_outline` then `capture_area` does not reload the page every time
+- [ ] Look inside iframes and shadow DOM (modern web apps hide content there, so the outline shows fewer regions)
+- [ ] Pick an area by visible text or role (for example "the button named Subscribe"), not only by selector
+- [ ] `scroll` option to capture content that only loads while scrolling (lazy loading)
+- [ ] Pages behind a login (needs cookies or a browser extension; security review first)
 
 ## Key management
 - [ ] List keys (label, created, expires, last used, calls) on the main page
@@ -61,5 +69,4 @@ Order is roughly the order I would do things. Update the status as work moves.
 
 ## Ideas
 - [ ] `mode` parameter on `explain_page`: `text` only or text with an LLM explanation (needs the REST phase work)
-- [ ] Return the screenshot inline (base64) as an option
 - [ ] Node 22 on the server

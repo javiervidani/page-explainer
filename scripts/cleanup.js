@@ -9,7 +9,7 @@ const MAX_AGE_MS = 24 * 60 * 60 * 1000;
 (async () => {
   let removed = 0;
   for (const name of await fs.readdir(DIR)) {
-    if (!name.endsWith('.png')) continue; // keep .gitkeep etc.
+    if (!/\.(png|jpg)$/.test(name)) continue; // keep .gitkeep etc.
     const file = path.join(DIR, name);
     const { mtimeMs } = await fs.stat(file);
     if (Date.now() - mtimeMs > MAX_AGE_MS) {
