@@ -2,3 +2,4 @@ node_modules/
 .env
 public/shots/*.png
 data/
+.deployed-at

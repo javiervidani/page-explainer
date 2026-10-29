@@ -9,12 +9,19 @@ const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/ser
 const { createMcpServer } = require('./mcp/server');
 const { closeBrowser } = require('./services/browser');
 const { createKey, verifyKey, ALLOWED_DAYS } = require('./services/keys');
+const { version } = require('./package.json');
+
+const startedAt = new Date().toISOString();
+// deploy.sh writes the deploy time here; absent when running locally.
+let deployedAt = null;
+try { deployedAt = require('node:fs').readFileSync(path.join(__dirname, '.deployed-at'), 'utf8').trim(); } catch {}
 
 const app = express();
 app.set('trust proxy', 1); // behind Plesk's nginx/Apache, so req.ip is the real client
 app.use(express.json({ limit: '1mb' }));
 
-app.get('/health', (req, res) => res.json({ ok: true }));
+// version = code version (bumped on each push); startedAt = when this process started.
+app.get('/health', (req, res) => res.json({ ok: true, version, startedAt, deployedAt }));
 app.use('/shots', express.static(path.join(__dirname, 'public', 'shots')));
 
 // Auth for /mcp. Accepted: the permanent API_KEY env var, or a generated key that has not expired.

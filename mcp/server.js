@@ -9,7 +9,7 @@ const { enqueue } = require('../services/queue');
 const BASE_URL = (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '');
 
 function createMcpServer() {
-  const server = new McpServer({ name: 'page-explainer', version: '1.0.0' });
+  const server = new McpServer({ name: 'page-explainer', version: require('../package.json').version });
 
   server.registerTool(
     'explain_page',

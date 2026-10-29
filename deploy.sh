@@ -13,5 +13,6 @@ fi
 npm install --omit=dev
 npx playwright install chromium   # cached after the first run
 mkdir -p public/shots tmp
+date -u +%Y-%m-%dT%H:%M:%SZ > .deployed-at   # shown by /health
 touch tmp/restart.txt             # Passenger restarts the app
 echo "Deploy finished"

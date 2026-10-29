@@ -81,6 +81,21 @@ Never commit `.env`.
 5. **Scheduled Tasks:** run `node scripts/cleanup.js` daily (deletes screenshots older than 24 h).
 6. Check `https://YOUR-DOMAIN/health`.
 
+## Checking that a push is live
+
+`GET /health` returns `{ ok, version, startedAt, deployedAt }`. `version` comes from
+`package.json` and is bumped on every push, so it tells you which code the server runs;
+`startedAt` shows when the app last restarted.
+
+```bash
+bash scripts/check-deploy.sh https://YOUR-DOMAIN        # waits until /health shows the repo's version
+```
+
+For pushes to deploy by themselves, in Plesk open **Git** > your repository > settings,
+set the deploy mode to **Automatic**, copy the **Webhook URL** and add it in GitHub under
+*Settings > Webhooks* (content type `application/json`, push events only).
+Without the webhook, click **Pull Updates** in Plesk after each push.
+
 ## Project layout
 
 ```
@@ -92,6 +107,7 @@ services/urlGuard.js URL validation and SSRF protection
 services/browser.js  Playwright: open page, extract text, screenshot
 services/keys.js    Generated API keys with expiry
 services/queue.js    Concurrency limiter (2 running, 10 waiting)
+scripts/check-deploy.sh Waits until the server runs the expected version
 scripts/cleanup.js   Removes screenshots older than 24 h
 ```
 
