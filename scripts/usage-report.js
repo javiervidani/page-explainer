@@ -15,10 +15,11 @@ for (const name of files) {
     if (!line) continue;
     let r;
     try { r = JSON.parse(line); } catch { continue; }
-    const t = rows.get(r.key || '(none)') || { calls: 0, overlap: 0, failed: 0, cpuS: 0, peakMb: 0, downMb: 0, shotMb: 0, sec: 0 };
+    const t = rows.get(r.key || '(none)') || { calls: 0, hits: 0, overlap: 0, failed: 0, cpuS: 0, peakMb: 0, downMb: 0, shotMb: 0, sec: 0 };
     t.calls++;
     if (r.status !== 200) t.failed++;
     if (r.concurrent > 1) t.overlap++;
+    if (r.cache === 'hit') t.hits++;
     t.cpuS += ((r.cpuBrowserMs || 0) + (r.cpuNodeMs || 0)) / 1000;
     t.peakMb = Math.max(t.peakMb, (r.peakBrowserMb || 0) + (r.peakNodeMb || 0));
     t.downMb += (r.bytesDownloaded || 0) / 1048576;
@@ -35,6 +36,7 @@ if (rows.size === 0) process.exit(0);
 console.table(Object.fromEntries([...rows].map(([k, t]) => [k, {
   calls: t.calls,
   failed: t.failed,
+  'cache hits': t.hits,
   overlapped: t.overlap,
   'cpu s': +t.cpuS.toFixed(1),
   'peak MB': +t.peakMb.toFixed(0),

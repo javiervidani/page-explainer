@@ -59,19 +59,17 @@ async function getBrowser() {
 }
 
 async function closeBrowser() {
+  for (const key of [...kept.keys()]) dropKept(key);
   if (!browserPromise) return;
   const b = await browserPromise.catch(() => null);
   browserPromise = null;
   if (b) await b.close();
 }
 
-// Opens `rawUrl` safely (every request and redirect hop checked) and runs `fn(page)` on it.
-// `options.viewport` is 'desktop' (default) or 'mobile'. `stats` is filled in as we go:
-// bytesDownloaded, requests (and screenshotBytes by the jobs below).
-async function withPage(rawUrl, options, stats, fn) {
-  stats.bytesDownloaded = 0;
-  stats.requests = 0;
-  const startUrl = await assertSafeUrl(rawUrl);
+// Opens a page safely (every request and redirect hop checked) and returns { context, page, holder }.
+// `holder.stats` is where bandwidth is counted; a kept page gets a new holder.stats on each reuse.
+async function openPage(startUrl, options, stats) {
+  const holder = { stats };
   const browser = await getBrowser();
   const context = await browser.newContext(VIEWPORTS[options.viewport] || VIEWPORTS.desktop);
   try {
@@ -88,8 +86,8 @@ async function withPage(rawUrl, options, stats, fn) {
 
     // Bandwidth: every response body passes through us, so we can count what was downloaded.
     const countBytes = async (response) => {
-      stats.bytesDownloaded += (await response.body()).length;
-      stats.requests++;
+      holder.stats.bytesDownloaded += (await response.body()).length;
+      holder.stats.requests++;
     };
 
     await context.route('**/*', async (route) => {
@@ -140,9 +138,86 @@ async function withPage(rawUrl, options, stats, fn) {
     await page.waitForLoadState('networkidle', { timeout: NETWORKIDLE_CAP_MS }).catch(() => {});
     if (blockedMain) throw new UrlError('Page redirected to a blocked address');
 
-    return await fn(page);
+    return { context, page, holder };
+  } catch (err) {
+    await context.close().catch(() => {}); // loading failed: release the context
+    throw err;
+  }
+}
+
+// ---- Kept pages -------------------------------------------------------------------------------
+// After a call the loaded page is kept for a short time, so that page_outline followed by
+// capture_area does not load the page again. Kept pages belong to one key and are offline while
+// idle (no background traffic). Settings: PAGE_CACHE_TTL_S (idle seconds, default 60),
+// PAGE_CACHE_MAX (pages kept, default 3, 0 = off), PAGE_CACHE_MAX_AGE_S (default 300).
+const CACHE_TTL_MS = (Number(process.env.PAGE_CACHE_TTL_S) || 60) * 1000;
+const CACHE_MAX = process.env.PAGE_CACHE_MAX === undefined || process.env.PAGE_CACHE_MAX === '' ? 3 : Number(process.env.PAGE_CACHE_MAX);
+const CACHE_MAX_AGE_MS = (Number(process.env.PAGE_CACHE_MAX_AGE_S) || 300) * 1000;
+
+const kept = new Map(); // key -> { context, page, holder, openedAt, timer }
+
+const closeEntry = (entry) => {
+  clearTimeout(entry.timer);
+  return entry.context.close().catch(() => {});
+};
+
+function dropKept(key) {
+  const entry = kept.get(key);
+  if (!entry) return;
+  kept.delete(key);
+  closeEntry(entry);
+}
+
+// Takes a usable page out of the cache (it is back in the cache when the call ends).
+function takeKept(key) {
+  const entry = kept.get(key);
+  if (!entry) return null;
+  kept.delete(key);
+  clearTimeout(entry.timer);
+  if (entry.page.isClosed() || Date.now() - entry.openedAt > CACHE_MAX_AGE_MS) {
+    closeEntry(entry);
+    return null;
+  }
+  return entry;
+}
+
+async function keepPage(key, entry) {
+  if (kept.has(key)) return closeEntry(entry); // another call kept the same page meanwhile
+  while (kept.size >= CACHE_MAX) dropKept(kept.keys().next().value); // oldest first
+  try { await entry.context.setOffline(true); } catch { return closeEntry(entry); }
+  entry.timer = setTimeout(() => dropKept(key), CACHE_TTL_MS);
+  entry.timer.unref();
+  kept.set(key, entry);
+}
+
+// Opens `rawUrl` (or reuses the kept page) and runs `fn(page)` on it.
+// options: viewport ('desktop' | 'mobile'), cacheOwner (who the kept page belongs to),
+// refresh (true = load again instead of reusing). `stats` gets bytesDownloaded, requests, cache.
+async function withPage(rawUrl, options, stats, fn) {
+  stats.bytesDownloaded = 0;
+  stats.requests = 0;
+  const startUrl = await assertSafeUrl(rawUrl); // checked on every call, also for kept pages
+  const useCache = CACHE_MAX > 0 && !!options.cacheOwner;
+  const key = useCache ? `${options.cacheOwner}|${options.viewport || 'desktop'}|${startUrl.href}` : null;
+
+  if (key && options.refresh) dropKept(key);
+  let entry = key ? takeKept(key) : null;
+  if (entry) {
+    stats.cache = 'hit';
+    entry.holder.stats = stats;
+    await entry.context.setOffline(false).catch(() => {});
+    await entry.page.evaluate(() => window.scrollTo(0, 0)).catch(() => {});
+  } else {
+    stats.cache = key ? 'miss' : 'off';
+    entry = await openPage(startUrl, options, stats);
+  }
+
+  try {
+    return await fn(entry.page);
   } finally {
-    await context.close(); // always release the context
+    // A failed call (for example an unknown selector) leaves a good page behind: keep it.
+    if (key && !entry.page.isClosed()) await keepPage(key, entry);
+    else await closeEntry(entry);
   }
 }
 

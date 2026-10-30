@@ -19,6 +19,14 @@ const viewportField = z
   .optional()
   .describe("Window size: 'desktop' (1280x800, default) or 'mobile' (390x844)");
 
+const refreshField = z
+  .boolean()
+  .optional()
+  .describe('true: load the page again. By default a page opened in the last minute by the same key is reused, so its content can be up to a minute old');
+
+// Said in the reply when a kept page was reused, so the model knows the content may be slightly old.
+const reuseNote = (stats) => (stats.cache === 'hit' ? 'Note: this page was reused from a call made a moment ago (up to 1 minute old). Use refresh: true to reload it.\n' : '');
+
 // Runs one tool call: waits in the queue, measures the job, turns errors into tool errors and
 // writes the usage log. `job(stats)` returns { content, textBytes? } (the MCP reply).
 async function runTool(tool, url, ctx, job) {
@@ -67,6 +75,7 @@ async function runTool(tool, url, ctx, job) {
       ...(metrics || {}),
       bytesDownloaded: stats.bytesDownloaded || 0, // from the target site (decoded size)
       requests: stats.requests || 0,
+      cache: stats.cache || '',                    // hit: page reused, miss: loaded and kept, off: not kept
       screenshotBytes: stats.screenshotBytes || 0,
       bytesToClient: replyBytes,                   // size of the tool reply (text + inline image)
     });
@@ -90,17 +99,18 @@ function createMcpServer(ctx = {}) {
         url: urlField,
         viewport: viewportField,
         fullPage: z.boolean().optional().describe('true (default): screenshot of the whole page; false: only the visible screen'),
+        refresh: refreshField,
       },
     },
-    ({ url, viewport, fullPage }) => runTool('explain_page', url, ctx, async (stats) => {
-      const { text, screenshotFile, finalUrl } = await capturePage(url, stats, { viewport, fullPage });
+    ({ url, viewport, fullPage, refresh }) => runTool('explain_page', url, ctx, async (stats) => {
+      const { text, screenshotFile, finalUrl } = await capturePage(url, stats, { viewport, fullPage, refresh, cacheOwner: ctx.keyLabel });
       const body = text.length < 200
         ? `${text}\n\n[Note: the extracted text is very short; the page may be incomplete or script-rendered.]`
         : text;
       return {
         content: [{
           type: 'text',
-          text: `URL: ${finalUrl}\nScreenshot: ${BASE_URL}/shots/${screenshotFile}\n\n--- PAGE TEXT ---\n${body}`,
+          text: `URL: ${finalUrl}\n${reuseNote(stats)}Screenshot: ${BASE_URL}/shots/${screenshotFile}\n\n--- PAGE TEXT ---\n${body}`,
         }],
       };
     })
@@ -115,16 +125,16 @@ function createMcpServer(ctx = {}) {
         'content, footer, forms...). Each region has a label, a CSS selector, its position and size ' +
         'in pixels and a text snippet, plus the headings and buttons of the page. Use it first when ' +
         'you need to look at or explain one part of a page, then call capture_area with a selector.',
-      inputSchema: { url: urlField, viewport: viewportField },
+      inputSchema: { url: urlField, viewport: viewportField, refresh: refreshField },
     },
-    ({ url, viewport }) => runTool('page_outline', url, ctx, async (stats) => {
-      const { finalUrl, outline } = await getOutline(url, stats, { viewport });
+    ({ url, viewport, refresh }) => runTool('page_outline', url, ctx, async (stats) => {
+      const { finalUrl, outline } = await getOutline(url, stats, { viewport, refresh, cacheOwner: ctx.keyLabel });
       let json = JSON.stringify({ url: finalUrl, ...outline }, null, 1);
       if (json.length > MAX_OUTLINE_CHARS) json = `${json.slice(0, MAX_OUTLINE_CHARS)}\n... [outline cut]`;
       return {
         content: [{
           type: 'text',
-          text: `${json}\n\nNext: call capture_area with the same url and a region's "selector" (or its "box" as region) to see it as an image. Pages whose content sits inside iframes or shadow DOM may show fewer regions.`,
+          text: `${reuseNote(stats)}${json}\n\nNext: call capture_area with the same url and a region's "selector" (or its "box" as region) to see it as an image. Pages whose content sits inside iframes or shadow DOM may show fewer regions.`,
         }],
       };
     })
@@ -153,10 +163,11 @@ function createMcpServer(ctx = {}) {
           .describe('Area in page pixels from the top-left corner of the whole page (used when no selector is given)'),
         viewport: viewportField,
         fullPage: z.boolean().optional().describe('With no selector or region: capture the whole page instead of the visible screen'),
+        refresh: refreshField,
       },
     },
-    ({ url, selector, region, viewport, fullPage }) => runTool('capture_area', url, ctx, async (stats) => {
-      const r = await captureArea(url, { selector, region, fullPage }, stats, { viewport });
+    ({ url, selector, region, viewport, fullPage, refresh }) => runTool('capture_area', url, ctx, async (stats) => {
+      const r = await captureArea(url, { selector, region, fullPage }, stats, { viewport, refresh, cacheOwner: ctx.keyLabel });
       const c = r.clip;
       const notes = [
         `URL: ${r.finalUrl}`,
@@ -166,6 +177,7 @@ function createMcpServer(ctx = {}) {
       if (r.cut) {
         notes.push(`The area is ${r.boxHeight}px tall and was cut. To continue, call again with region { x: ${c.x}, y: ${c.y + c.height}, width: ${c.width}, height: ${Math.min(2000, r.pageHeight - (c.y + c.height))} }.`);
       }
+      if (stats.cache === 'hit') notes.push(reuseNote(stats).trim());
       notes.push('', '--- TEXT IN THIS AREA ---', r.text || '(no text found in this area)');
       return {
         content: [

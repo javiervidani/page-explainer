@@ -9,6 +9,7 @@ Order is roughly the order I would do things. Update the status as work moves.
 - [x] Main page: generate expiring API keys (1, 7, 30 or 90 days) behind an admin password
 - [x] Team testing: key label per person, connector URL (`/mcp?key=...`) for URL-only connector screens
 - [x] Usage log per call: CPU, memory, bandwidth (`data/usage-*.jsonl`, `node scripts/usage-report.js`)
+- [x] Short page cache: the loaded page is kept about 60 seconds per key, URL and viewport (max 3 pages, offline while idle), so `page_outline` then `capture_area` does not reload it; `refresh: true` forces a reload; usage log has a `cache` field
 - [x] Explain parts of a page: `page_outline` (regions with selectors and positions, headings, buttons, RTL detection) and `capture_area` (one area by CSS selector or pixel region, returned as an inline image plus the text inside it); `explain_page` got `viewport` (desktop or mobile) and `fullPage` options
 
 ## Now: team testing (Claude connector)
@@ -19,7 +20,6 @@ Order is roughly the order I would do things. Update the status as work moves.
 - [ ] Read the usage report after a few days and decide limits (see "Cost and abuse controls")
 
 ## Page parts (follow-ups)
-- [ ] Short cache (about 60 seconds per URL and key) so `page_outline` then `capture_area` does not reload the page every time
 - [ ] Look inside iframes and shadow DOM (modern web apps hide content there, so the outline shows fewer regions)
 - [ ] Pick an area by visible text or role (for example "the button named Subscribe"), not only by selector
 - [ ] `scroll` option to capture content that only loads while scrolling (lazy loading)
@@ -66,6 +66,32 @@ Order is roughly the order I would do things. Update the status as work moves.
 - [ ] Move keys and usage to the database; remove `?key=` URLs in favour of OAuth
 - [ ] Security review (SSRF tests, rate limits, headers such as CSP on the main page)
 - [ ] Listing or documentation page for users; support contact
+
+## More ideas (not planned yet)
+Tools
+- [ ] `page_data(url)`: structured data the page already contains (JSON-LD, Open Graph, meta tags, tables, price and brand fields). Cheaper and more reliable than reading the screenshot, and it would have answered the product questions directly.
+- [ ] `find_in_page(url, text)`: find where a word or phrase appears and return the region, selector and an image of it
+- [ ] `page_text(url, selector)`: only the text of one element (no image), for when the image is not needed
+- [ ] `page_links(url)`: the links of the page (text, destination, which region they are in), so a model can choose where to look next
+- [ ] Accessibility snapshot (the page's ARIA tree) as a compact, model-friendly alternative to the outline
+- [ ] Numbered overlay: a screenshot with region numbers drawn on it, so the model can say "region 3" instead of a selector
+- [ ] Limited interaction (expand a section, switch a tab, scroll to a position) without form submission or purchases
+- [ ] PDF, image and plain-text URLs: explain a linked PDF or image, not only HTML pages
+- [ ] Export the page as a PDF
+
+Quality of the result
+- [ ] Hide cookie banners and fixed overlays for the screenshot (they covered part of the Amazon page)
+- [ ] Locale options: language (`Accept-Language`), time zone and colour scheme (dark or light). The server's country still decides which regional store or content a site shows.
+- [ ] More device sizes: tablet, small phone, and a custom width
+- [ ] Sharper small text: 2x pixel density option for `capture_area`, PNG for small text areas
+- [ ] Text-only mode that skips images, fonts and media to save bandwidth and CPU
+- [ ] Optional `timeoutSeconds` per call
+
+Operations and control
+- [ ] Per-key allow-list or block-list of domains
+- [ ] Usage page for admins (the usage report in the browser, with charts)
+- [ ] Restart Chromium after a number of pages or when memory grows too high
+- [ ] Notice to the model when a site shows a block page or a "continue" screen to automated visitors, instead of returning that page as if it were the content
 
 ## Ideas
 - [ ] `mode` parameter on `explain_page`: `text` only or text with an LLM explanation (needs the REST phase work)

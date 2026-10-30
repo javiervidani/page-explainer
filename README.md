@@ -15,7 +15,7 @@ in this phase.
 | `capture_area({ url, selector? , region?, viewport?, fullPage? })` | One area of the page as an **inline JPEG image** the model can see, plus the text inside that area. Choose it with a CSS selector (from `page_outline`) or a `region` `{ x, y, width, height }` in page pixels. With neither you get the visible screen. Areas taller than 2000 px are cut, and the reply says which `region` to request next. A copy is saved under `/shots/<uuid>.jpg`. |
 
 Typical use: `page_outline` first, then `capture_area` on the part you want explained.
-Each call opens the page again. Pages behind a login are not supported, and content inside
+The loaded page is kept for about a minute (see "Page cache"), so follow-up calls on the same page are quick. Pages behind a login are not supported, and content inside
 iframes or shadow DOM may not appear in the outline.
 
 Errors come back as MCP tool errors: invalid or blocked URL, bad selector or area (400),
@@ -56,12 +56,22 @@ choose 1, 7, 30 or 90 days and click **Generate key**. The page also shows a **c
 permanent `API_KEY` env var, if set, keeps working. Wrong-password attempts are
 limited to 10 per hour per IP.
 
+## Page cache
+
+After a call the loaded page is kept in memory for 60 seconds, so `page_outline` followed by
+`capture_area` (or `explain_page`) does not load the page again. A kept page belongs to one key and one
+window size, is offline while idle, and is closed after the idle time, after 5 minutes in total, or when
+more than 3 pages are kept (the oldest goes first). Every call still checks the URL again. Replies say
+when a kept page was reused, and `refresh: true` on any tool loads the page again. The usage log has a
+`cache` field (`hit`, `miss` or `off`). Kept pages use memory, so on a small server lower
+`PAGE_CACHE_MAX` or set it to 0.
+
 ## Usage log (CPU, memory, bandwidth)
 
 Every `explain_page` call writes one line to the console and to `data/usage-YYYY-MM-DD.jsonl`
 (kept 30 days by `scripts/cleanup.js`). Fields: `key` (the label), `ip`, `target` (host and path),
 `tool`, `status`, `totalMs`, `queueMs`, `jobMs`, `cpuBrowserMs` (Chromium and its helpers), `cpuNodeMs`,
-`peakBrowserMb` (PSS, sampled twice a second), `peakNodeMb`, `concurrent`, `bytesDownloaded`
+`peakBrowserMb` (PSS, sampled twice a second), `peakNodeMb`, `concurrent`, `cache`, `bytesDownloaded`
 (from the target site, decoded size), `requests`, `screenshotBytes`, `bytesToClient` (reply size, including an inline image).
 
 ```bash
@@ -81,6 +91,9 @@ overlap too, so totals are slightly too high.
 | `API_KEY` | Optional permanent key. `/mcp` requires a key in `x-api-key` or `Authorization: Bearer` whenever `API_KEY` or `ADMIN_PASSWORD` is set |
 | `ADMIN_PASSWORD` | Password for the key generator on the main page. If empty, generation is disabled |
 | `RATE_LIMIT_PER_MIN` | Requests per IP per minute on `/mcp` (default 30) |
+| `PAGE_CACHE_TTL_S` | Seconds a page is kept after its last use (default 60) |
+| `PAGE_CACHE_MAX` | Pages kept at the same time, 0 turns the cache off (default 3) |
+| `PAGE_CACHE_MAX_AGE_S` | Longest time a page is kept in total (default 300) |
 | `PW_NO_SANDBOX` | Set to `1` only if Chromium will not start without `--no-sandbox` |
 | `PW_CHROMIUM_PATH` | Optional path to an already-installed Chromium |
 
