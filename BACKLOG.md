@@ -31,16 +31,18 @@ Order is roughly the order I would do things. Update the status as work moves.
 - [ ] `scroll` option to capture content that only loads while scrolling (lazy loading)
 - [ ] Pages behind a login (needs cookies or a browser extension; security review first)
 
-## Chrome extension (next)
+## Chrome extension
 Why: tools like NotebookLM need a login. In the kid's own browser the session is already there, nothing secret leaves the computer, and the server cannot (and should not) do it.
-- [ ] Decide the language and reading level of the lessons (Hebrew, right-to-left, kids' ages) and which tools come first
-- [ ] Minimal extension (Manifest V3): side panel that recognises the tool the kid is on (for example NotebookLM) and shows the matching lesson
-- [ ] Lessons as simple files the owner can write and edit (title, steps, text, pictures); no coding needed to add a lesson
-- [ ] "Show me" button: highlight the button or area a step talks about, using the outline and selector code from PageLens
-- [ ] Works fully on the computer at first: no page content is sent anywhere
+- [x] Decided: Hebrew, ages 6 and 9, NotebookLM first, kid's own supervised PC with extensions allowed
+- [x] First version in `extension/` (Manifest V3): owl button, lesson list, step by step panel, yellow frame on the part of the page each step talks about, read aloud (Hebrew voice), "a bit more" text, stars for finished lessons, panel side, no network requests; tested on a mock of the NotebookLM layout
+- [x] Lessons are plain JSON files the owner can edit (`extension/lessons/`), see `extension/README.md`
+- [ ] Try it on the real NotebookLM and fix the button names in the lessons (labels were taken from screenshots and guesses)
+- [ ] Owner reviews and rewrites the Hebrew lesson text; add the real lessons
+- [ ] Lesson for an image creation tool (which one first?)
+- [ ] Check there is a Hebrew voice on the kids' PC for read aloud
 - [ ] Optional later: "ask about this page" with an LLM, with the parent's consent and no personal data sent
-- [ ] Install for the family by loading it unpacked (no store needed); Chrome Web Store later if it is shared
-- [ ] Check what the kids' Chrome allows (school or supervised accounts may block extensions) and the age rules of each tool
+- [ ] Chrome Web Store later if it is shared outside the family
+- [ ] Check the age rules of each tool and what the supervised accounts allow
 
 ## Later: companies (do not start)
 - [ ] Help employees with internal systems and forms (extension for logged-in internal tools, guidance on the page)

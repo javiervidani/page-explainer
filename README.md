@@ -134,10 +134,16 @@ set the deploy mode to **Automatic**, copy the **Webhook URL** and add it in Git
 *Settings > Webhooks* (content type `application/json`, push events only).
 Without the webhook, click **Pull Updates** in Plesk after each push.
 
+## Chrome extension for kids
+
+`extension/` holds a separate Chrome extension (not part of the server) with Hebrew lessons for NotebookLM, for
+children aged 6 to 9. See `extension/README.md` for installing it and writing lessons.
+
 ## Project layout
 
 ```
 deploy.sh            Plesk post-deployment script
+extension/           Chrome extension: Hebrew lessons for kids (separate from the server)
 app.js               Express entry: /, /admin/keys, /health, /shots, /mcp
 views/index.html    Main page (key generator)
 mcp/server.js        MCP server and its three tools
