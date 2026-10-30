@@ -8,7 +8,8 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const send = (m) => chrome.runtime.sendMessage(m).catch((e) => {
     LM.log(`${m.type} failed: ${e.message}`);
-    return { error: `ההרחבה לא הגיבה (${String(e.message).slice(0, 60)}). נסו לרענן את הדף.` };
+    const stale = /context invalidated/i.test(e.message);
+    return { error: stale ? 'ההרחבה עודכנה, והדף הזה עדיין ישן. רעננו את הדף (F5) ואז נסו שוב.' : `ההרחבה לא הגיבה (${String(e.message).slice(0, 60)}). נסו לרענן את הדף.` };
   });
   let timer = null;
   let timeEl = null;

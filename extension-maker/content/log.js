@@ -2,15 +2,17 @@
 (() => {
   const LM = (window.LessonMaker = window.LessonMaker || {});
   const mine = [];
+  const alive = () => { try { return !!chrome.runtime.id; } catch { return false; } };
 
   function log(text) {
     mine.push(`${new Date().toISOString().slice(11, 19)} page ${text}`);
     if (mine.length > 40) mine.shift();
-    try { chrome.runtime.sendMessage({ type: 'logAdd', where: 'page', text }).catch(() => {}); } catch { /* extension reloaded */ }
+    if (alive()) chrome.runtime.sendMessage({ type: 'logAdd', where: 'page', text }).catch(() => {});
   }
 
   // Copies the worker's lines and the page's lines, so the text can be pasted into a chat.
   async function copy() {
+    if (!alive()) return LM.actions.setStatus('ההרחבה עודכנה או הופעלה מחדש. רעננו את הדף (F5) ואז נסו שוב.', 'bad');
     let worker = ['(the worker did not answer)'];
     try { worker = (await chrome.runtime.sendMessage({ type: 'logGet' })).lines || []; } catch (e) { worker = [`(the worker did not answer: ${e.message})`]; }
     const text = [`version ${chrome.runtime.getManifest().version}, ${location.hostname}`, '-- worker --', ...worker, '-- page --', ...mine].join('\n');
