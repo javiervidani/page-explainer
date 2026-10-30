@@ -1,6 +1,6 @@
 // Service worker of the team extension: takes the picture of the tab and sends it to PageLens.
 // The upload is made here (not in the page) so the page can never see the key.
-importScripts('remote.js'); // auto mode: the calls to the server
+importScripts('log.js', 'remote.js'); // the log, then auto mode (the calls to the server)
 
 const SITES = ['notebooklm.google.com', 'notebook.google.com'];
 
@@ -54,6 +54,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg && msg.type === 'saveCapture') {
     saveCapture(msg.payload, sender).then(sendResponse, (err) => sendResponse({ error: err.message }));
     return true; // the answer comes later
+  }
+  if (msg && msg.type && msg.type.startsWith('log')) {
+    logMessage(msg).then(sendResponse, () => sendResponse({ lines: [] }));
+    return true;
   }
   if (msg && msg.type && msg.type.startsWith('remote')) {
     remoteMessage(msg, sender).then(sendResponse, (err) => sendResponse({ error: err.message }));

@@ -6,7 +6,10 @@
   const s = LM.state;
   const { h } = LM.util;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const send = (m) => chrome.runtime.sendMessage(m).catch(() => ({ error: 'ההרחבה לא הגיבה. נסו לרענן את הדף.' }));
+  const send = (m) => chrome.runtime.sendMessage(m).catch((e) => {
+    LM.log(`${m.type} failed: ${e.message}`);
+    return { error: `ההרחבה לא הגיבה (${String(e.message).slice(0, 60)}). נסו לרענן את הדף.` };
+  });
   let timer = null;
   let timeEl = null;
   let countEl = null;
@@ -38,7 +41,9 @@
     if (s.remote || s.busy) return;
     LM.actions.setStatus('מפעיל מצב אוטומטי...');
     LM.views.render();
+    LM.log('auto mode: start pressed');
     const r = await send({ type: 'remoteArm' });
+    LM.log(r.code ? 'auto mode: armed' : `auto mode: not armed, ${r.error || 'no answer'}`);
     if (!r || !r.code) {
       LM.actions.setStatus((r && r.error) || 'לא הצלחתי להפעיל.', 'bad');
       return LM.views.render();

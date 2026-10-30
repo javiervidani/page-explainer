@@ -28,15 +28,18 @@ const needGrant = new Set(); // tabs where auto mode waits for the toolbar click
 async function remoteMessage(msg, sender) {
   if (msg.type === 'remoteArm') {
     // Try a picture first (not kept): if Chrome does not allow it, the author hears it now, not in the middle of a chat.
+    logEvent('worker', 'arm: asked');
     const hidden = await checkVisible(sender.tab).catch(() => 'לא הצלחתי לבדוק את הלשונית.');
-    if (hidden) return { error: hidden };
+    if (hidden) { logEvent('worker', `arm: refused, ${hidden}`); return { error: hidden }; }
     try {
       await chrome.tabs.captureVisibleTab(sender.tab.windowId, { format: 'jpeg', quality: 20 });
-    } catch {
+    } catch (e) {
+      logEvent('worker', `arm: test picture refused, ${e.message}`);
       needGrant.add(sender.tab.id);
       return { error: 'כדי להפעיל מצב אוטומטי, לחצו פעם אחת על סמל ההרחבה (📸) בסרגל הכלים. המצב יופעל מיד, והחלון יישאר פתוח.' };
     }
     const r = await remoteCall('arm', 'POST', { minutes: 30 }, 15000);
+    logEvent('worker', r.code ? 'arm: server gave a code' : `arm: server said ${r.error || JSON.stringify(r)}`);
     return r.code ? { code: r.code, armedUntil: r.armedUntil } : r;
   }
   if (msg.type === 'remoteNext') return remoteCall(`next?code=${encodeURIComponent(msg.code)}`, 'GET', null, 35000);
