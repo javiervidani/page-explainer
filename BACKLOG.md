@@ -45,6 +45,31 @@ Why: tools like NotebookLM need a login. In the kid's own browser the session is
 - [ ] Chrome Web Store later if it is shared outside the family
 - [ ] Check the age rules of each tool and what the supervised accounts allow
 
+## Next phase: lesson maker for the team (decided, not started)
+Goal: the team builds lessons for the kids from real screens. Team members save screens from NotebookLM, and in a chat Claude turns them into a Talkdeck slide lesson (and into the step file for the kids' extension).
+
+Decisions
+- Two separate extensions: the kids' extension stays as it is (no upload code, no keys, no network); a new **team extension (lesson maker)** adds capture and upload
+- A saved screen looks like what the author sees now, **including the yellow frame on the marked button**
+- Talkdeck is the owner's own project, so it can be changed to accept an image link
+- Captures are kept **30 days**, then deleted; only team keys can upload
+
+Work, in this order
+- [ ] PageLens: upload endpoint for saved screens (team key only, size limit, rate limit), stored under `data/captures/` with project name, note, the button name and position, and the list of visible button names (names only, never notebook content)
+- [ ] PageLens: tools to list the saved screens of a project and to return one as an image with its details; short-lived unguessable image links
+- [ ] PageLens: delete captures after 30 days (in `scripts/cleanup.js`) and log the storage used
+- [ ] Team extension (`extension-maker/`): "pick the button" mode that puts the frame on it, "save this screen" (visible tab, frame included), a note field, settings for the PageLens address and the person's key (kept only in that browser)
+- [ ] Talkdeck: `slide_image_upload` accepts an image `url` and downloads it itself (today only base64, which is too heavy to pass through a chat)
+- [ ] A written recipe for the team: how to save screens, and the chat request that makes the lesson (Hebrew narration, slide text, images attached, build)
+- [ ] From the same saved screens, write the step file for the kids' extension with the exact button names
+- [ ] Team notes: do not save screens that show personal information; captures can show private notebooks
+
+## Synchronized lessons (to clarify before building)
+Idea: the child opens a Talkdeck lesson (slides with narration) and the extension in NotebookLM follows it, so when the lesson says "press Add sources" the extension frames that button, in step with the slide.
+- [ ] Decide where the lesson plays (inside the extension panel, another tab, or next to NotebookLM) and who drives (the lesson moves the extension, the child's "next" button moves both, or both)
+- [ ] One source for both: each slide carries the name of the button it talks about, so slides and extension steps stay matched
+- [ ] Talkdeck player reports the current slide and accepts "go to slide" (needed for any sync)
+
 ## Later: companies (do not start)
 - [ ] Help employees with internal systems and forms (extension for logged-in internal tools, guidance on the page)
 - [ ] `page_forms` tool: every field of a form (label, required, type, help text, buttons) so a model can explain how to fill it
