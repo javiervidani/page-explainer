@@ -27,25 +27,26 @@ function save(list) {
 }
 
 // Creates a key valid for `days` days. `label` (who it is for) appears in the usage log.
+// `role` 'team' lets the key save screens for lessons; the default role only reads pages.
 // The plain key is returned once and never stored.
-function createKey(days, label = '') {
+function createKey(days, label = '', role = '') {
   if (!ALLOWED_DAYS.includes(days)) throw new Error('Invalid expiry');
   const key = `pl_${crypto.randomBytes(32).toString('base64url')}`;
   const expiresAt = Date.now() + days * DAY_MS;
   const now = Date.now();
   const list = load().filter((k) => k.expiresAt > now); // drop expired keys while we are here
-  list.push({ hash: hash(key), expiresAt, label });
+  list.push({ hash: hash(key), expiresAt, label, role: role === 'team' ? 'team' : '' });
   save(list);
   return { key, expiresAt };
 }
 
-// Returns { id, label } for a valid, unexpired key, otherwise null.
+// Returns { id, label, role } for a valid, unexpired key, otherwise null.
 function verifyKey(key) {
   if (!key) return null;
   const h = hash(key);
   const now = Date.now();
   const found = load().find((k) => k.hash === h && k.expiresAt > now);
-  return found ? { id: h.slice(0, 8), label: found.label || '' } : null;
+  return found ? { id: h.slice(0, 8), label: found.label || '', role: found.role || '' } : null;
 }
 
 module.exports = { createKey, verifyKey, ALLOWED_DAYS };

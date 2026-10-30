@@ -1,7 +1,9 @@
-// Deletes screenshots older than 24 hours and usage logs older than 30 days. Run daily as a Plesk scheduled task:
+// Deletes screenshots older than 24 hours, usage logs older than 30 days and saved lesson screens
+// older than CAPTURE_DAYS (30). Run daily as a Plesk scheduled task:
 //   node scripts/cleanup.js
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const { removeOlderThan, storageBytes } = require('../services/captures/store');
 
 const DIR = path.join(__dirname, '..', 'public', 'shots');
 const MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -31,6 +33,9 @@ const MAX_AGE_MS = 24 * 60 * 60 * 1000;
     }
   }
   console.log(`Removed ${logsRemoved} old usage log(s)`);
+
+  const capturesRemoved = removeOlderThan();
+  console.log(`Removed ${capturesRemoved} old saved screen(s); saved screens now use ${(storageBytes() / 1048576).toFixed(1)} MB`);
 })().catch((err) => {
   console.error(err.message);
   process.exit(1);

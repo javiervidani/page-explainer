@@ -16,6 +16,8 @@
   p.lead { margin:0 0 24px; color:var(--muted); }
   .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:20px; }
   label { display:block; margin:0 0 6px; font-weight:600; font-size:.9rem; }
+  label.check { display:flex; gap:8px; align-items:center; font-weight:400; margin-bottom:16px; }
+  label.check input { width:auto; margin:0; }
   input, select { width:100%; padding:10px 12px; margin-bottom:16px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--text); font:inherit; }
   button { padding:10px 16px; border:0; border-radius:8px; background:var(--accent); color:#fff; font:inherit; font-weight:600; cursor:pointer; }
   button:disabled { opacity:.6; cursor:default; }
@@ -41,6 +43,8 @@
 
     <label for="label">Name or purpose (optional, shown in the usage log)</label>
     <input id="label" type="text" maxlength="40" placeholder="e.g. Dana, team test">
+
+    <label class="check"><input id="team" type="checkbox"> Team key: can also save screens for lessons</label>
 
     <label for="days">Key expires in</label>
     <select id="days">
@@ -82,7 +86,7 @@
       const res = await fetch('/admin/keys', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ password: $('pw').value, days: Number($('days').value), label: $('label').value }),
+        body: JSON.stringify({ password: $('pw').value, days: Number($('days').value), label: $('label').value, team: $('team').checked }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Request failed');

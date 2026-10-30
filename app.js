@@ -9,6 +9,7 @@ const { StreamableHTTPServerTransport } = require('@modelcontextprotocol/sdk/ser
 const { createMcpServer } = require('./mcp/server');
 const { closeBrowser } = require('./services/browser');
 const { createKey, verifyKey, ALLOWED_DAYS } = require('./services/keys');
+const { capturesRoutes } = require('./routes/captures');
 const { version } = require('./package.json');
 
 const startedAt = new Date().toISOString();
@@ -18,7 +19,9 @@ try { deployedAt = require('node:fs').readFileSync(path.join(__dirname, '.deploy
 
 const app = express();
 app.set('trust proxy', 1); // behind Plesk's nginx/Apache, so req.ip is the real client
-app.use(express.json({ limit: '1mb' }));
+// Most routes take small JSON; /captures has its own, larger parser (routes/captures.js).
+const jsonBody = express.json({ limit: '1mb' });
+app.use((req, res, next) => (req.path.startsWith('/captures') ? next() : jsonBody(req, res, next)));
 
 // version = code version (bumped on each push); startedAt = when this process started.
 app.get('/health', (req, res) => res.json({ ok: true, version, startedAt, deployedAt }));
@@ -35,7 +38,7 @@ const safeEqual = (a, b) => {
 function requireApiKey(req, res, next) {
   const master = process.env.API_KEY;
   if (!master && !process.env.ADMIN_PASSWORD) {
-    req.keyInfo = { id: 'open', label: '' };
+    req.keyInfo = { id: 'open', label: '', role: 'team' };
     return next();
   }
   // Accepted places: x-api-key header, Bearer token, or ?key= in the URL (for connector
@@ -43,7 +46,7 @@ function requireApiKey(req, res, next) {
   const bearer = (req.get('authorization') || '').replace(/^Bearer\s+/i, '');
   const given = req.get('x-api-key') || bearer || (typeof req.query.key === 'string' ? req.query.key : '');
   if (given && master && safeEqual(given, master)) {
-    req.keyInfo = { id: 'master', label: 'master' };
+    req.keyInfo = { id: 'master', label: 'master', role: 'team' };
     return next();
   }
   const info = verifyKey(given);
@@ -52,6 +55,12 @@ function requireApiKey(req, res, next) {
     return next();
   }
   res.status(401).json({ error: 'Unauthorized' });
+}
+
+// Saving screens for lessons is only for team keys (the master key and keys made with "team").
+function requireTeam(req, res, next) {
+  if (req.keyInfo.role === 'team') return next();
+  res.status(403).json({ error: 'This key cannot save screens. Ask for a team key.' });
 }
 
 // Behind Cloudflare the real client IP is in CF-Connecting-IP; otherwise use Express's req.ip.
@@ -63,6 +72,8 @@ const limiter = rateLimit({
   keyGenerator: clientIp,
   handler: (req, res) => res.status(429).json({ error: 'Too many requests' }),
 });
+
+app.use('/captures', capturesRoutes({ requireApiKey, requireTeam, clientIp }));
 
 // Main page and key generation (protected by ADMIN_PASSWORD).
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));
@@ -86,12 +97,16 @@ app.post('/admin/keys', adminLimiter, (req, res) => {
   }
   if (!ALLOWED_DAYS.includes(days)) return res.status(400).json({ error: 'Invalid expiry' });
   res.set('Cache-Control', 'no-store');
-  res.json(createKey(days, label));
+  res.json(createKey(days, label, req.body?.team === true ? 'team' : ''));
 });
 
 // MCP over Streamable HTTP, stateless: a fresh server + transport per request.
 app.post('/mcp', limiter, requireApiKey, async (req, res) => {
-  const server = createMcpServer({ keyLabel: req.keyInfo.label || req.keyInfo.id, ip: req.get('cf-connecting-ip') || req.ip });
+  const server = createMcpServer({
+    keyLabel: req.keyInfo.label || req.keyInfo.id,
+    ip: req.get('cf-connecting-ip') || req.ip,
+    isTeam: req.keyInfo.role === 'team', // team keys also get the tools for saved screens
+  });
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
   res.on('close', () => {
     transport.close();
