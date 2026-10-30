@@ -12,7 +12,7 @@
     const s = LM.state;
     const spot = LM.ui.spot;
     const el = s.picking ? s.hover : s.target;
-    if (!el || !el.isConnected || !s.open) { spot.hidden = true; return; }
+    if (!el || !el.isConnected || !(s.open || s.remote)) { spot.hidden = true; return; }
     const r = el.getBoundingClientRect();
     const pad = 6;
     spot.hidden = r.bottom < 0 || r.top > innerHeight || r.right < 0 || r.left > innerWidth;

@@ -19,6 +19,8 @@ Order is roughly the order I would do things. Update the status as work moves.
 - [x] Short page cache: the loaded page is kept about 60 seconds per key, URL and viewport (max 3 pages, offline while idle), so `page_outline` then `capture_area` does not reload it; `refresh: true` forces a reload; usage log has a `cache` field
 - [x] Explain parts of a page: `page_outline` (regions with selectors and positions, headings, buttons, RTL detection) and `capture_area` (one area by CSS selector or pixel region, returned as an inline image plus the text inside it); `explain_page` got `viewport` (desktop or mobile) and `fullPage` options
 
+- [x] T5 remote capture (team extension auto mode, `remote_labels` + `remote_capture`): code from the banner, 30 minutes, stop button, mark and save only, no clicking. Tested in Chromium with the extension (17 checks). Not yet tried on the real Gemini Notebook.
+
 ## Now: team testing (Claude connector)
 - [ ] Set `PUBLIC_BASE_URL` in Plesk so screenshot links are absolute
 - [ ] Switch the `pagelens` app to Node 20.20.2 in Plesk Node.js Manager

@@ -5,7 +5,7 @@
   LM.started = true;
 
   const { ui, state } = LM;
-  ui.root.append(ui.spot, ui.launcher, ui.panel);
+  ui.root.append(ui.spot, ui.launcher, ui.panel, ui.banner);
   document.documentElement.append(ui.host);
 
   chrome.runtime.onMessage.addListener((msg) => {

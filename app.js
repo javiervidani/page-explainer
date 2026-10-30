@@ -10,6 +10,7 @@ const { createMcpServer } = require('./mcp/server');
 const { closeBrowser } = require('./services/browser');
 const { createKey, verifyKey, ALLOWED_DAYS } = require('./services/keys');
 const { capturesRoutes } = require('./routes/captures');
+const { remoteRoutes } = require('./routes/remote');
 const { version } = require('./package.json');
 
 const startedAt = new Date().toISOString();
@@ -21,7 +22,7 @@ const app = express();
 app.set('trust proxy', 1); // behind Plesk's nginx/Apache, so req.ip is the real client
 // Most routes take small JSON; /captures has its own, larger parser (routes/captures.js).
 const jsonBody = express.json({ limit: '1mb' });
-app.use((req, res, next) => (req.path.startsWith('/captures') ? next() : jsonBody(req, res, next)));
+app.use((req, res, next) => (req.path.startsWith('/captures') || req.path.startsWith('/remote') ? next() : jsonBody(req, res, next)));
 
 // version = code version (bumped on each push); startedAt = when this process started.
 app.get('/health', (req, res) => res.json({ ok: true, version, startedAt, deployedAt }));
@@ -74,6 +75,7 @@ const limiter = rateLimit({
 });
 
 app.use('/captures', capturesRoutes({ requireApiKey, requireTeam, clientIp }));
+app.use('/remote', remoteRoutes({ requireApiKey, requireTeam, clientIp }));
 
 // Main page and key generation (protected by ADMIN_PASSWORD).
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));

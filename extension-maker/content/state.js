@@ -12,6 +12,7 @@
     target: null,      // the marked element
     targetLabel: '',
     busy: false,
+    remote: null,      // auto mode: { code, until, count } while it is on
     status: '',
     statusKind: '',    // 'ok' or 'bad'
   };

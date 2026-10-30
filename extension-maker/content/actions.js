@@ -38,12 +38,12 @@
   }
 
   // Everything the server needs besides the picture. Box positions are in the picture's own (CSS pixel) units.
-  function collectPayload() {
-    const r = s.target && s.target.isConnected ? s.target.getBoundingClientRect() : null;
+  function collectPayload({ project, note, target, targetLabel }) {
+    const r = target && target.isConnected ? target.getBoundingClientRect() : null;
     return {
-      project: s.project.trim(),
-      note: s.note.trim(),
-      target: r ? { label: s.targetLabel, box: { x: r.left, y: r.top, width: r.width, height: r.height } } : null,
+      project: project.trim(),
+      note: (note || '').trim(),
+      target: r ? { label: targetLabel, box: { x: r.left, y: r.top, width: r.width, height: r.height } } : null,
       labels: LM.labels.collectLabels(),
       page: {
         host: location.hostname, path: location.pathname, title: document.title,
@@ -52,22 +52,30 @@
     };
   }
 
-  // Hides this panel (so it is not in the picture; the yellow frame stays), takes the picture and uploads it.
-  async function save() {
-    if (s.busy) return;
-    if (!s.project.trim()) { setStatus('כתבו קודם שם פרויקט (שם השיעור).', 'bad'); return LM.views.render(); }
+  // Hides the maker (so it is not in the picture; the yellow frame stays), takes the picture and uploads it.
+  async function takePicture(details) {
     s.busy = true;
     if (s.picking) LM.picker.stop();
     LM.ui.panel.hidden = true;
     LM.ui.launcher.hidden = true;
+    LM.ui.banner.hidden = true;
     await sleep(250); // let the page repaint without the panel
     let result;
     try {
-      result = await chrome.runtime.sendMessage({ type: 'saveCapture', payload: collectPayload() });
+      result = await chrome.runtime.sendMessage({ type: 'saveCapture', payload: collectPayload(details) });
     } catch (err) {
       result = { error: 'ההרחבה לא הגיבה. נסו לרענן את הדף.' };
     }
     s.busy = false;
+    LM.ui.banner.hidden = !s.remote;
+    return result;
+  }
+
+  // The author pressed "save screen".
+  async function save() {
+    if (s.busy) return;
+    if (!s.project.trim()) { setStatus('כתבו קודם שם פרויקט (שם השיעור).', 'bad'); return LM.views.render(); }
+    const result = await takePicture(s);
     if (result && result.ok) {
       s.note = '';
       s.target = null;
@@ -79,5 +87,5 @@
     LM.views.render();
   }
 
-  LM.actions = { setOpen, togglePick, clearTarget, toggleSide, openSettings, save, setStatus };
+  LM.actions = { setOpen, togglePick, clearTarget, toggleSide, openSettings, save, takePicture, setStatus };
 })();

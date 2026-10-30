@@ -49,3 +49,16 @@ fresh link each time they are called.
   larger when the screen is high-resolution (`page.pixelRatio`).
 - Screens, notes and key labels are in `data/captures/` on the PageLens server (not in git). `scripts/cleanup.js`
   removes screens after 30 days (`CAPTURE_DAYS`) and prints how much space they use.
+
+## 6. Auto mode: the chat chooses the buttons (team keys)
+
+Instead of the author marking each button, the author turns on **auto mode** in the extension and reads the 6-digit code from
+the red banner to the chat. Two more tools then appear for team keys:
+
+- `remote_labels({ code })` returns the button and panel names visible on the author's open tab.
+- `remote_capture({ code, project, find: ["סקירה קולית"], scope?, note? })` marks the first name found (yellow frame),
+  saves the screen into the project, and returns the capture id. `list_captures` lists it like any other screen.
+
+Rules: it never clicks or types (the author opens each screen); 30 minutes at most; 60 requests per session; only the
+notebook tab while it is in front; the author can stop it at any moment. A session is a folder in `data/remote/<code>/`
+(a command and an answer per file), so several app copies see the same session.

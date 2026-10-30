@@ -1,5 +1,18 @@
 // Service worker of the team extension: takes the picture of the tab and sends it to PageLens.
 // The upload is made here (not in the page) so the page can never see the key.
+importScripts('remote.js'); // auto mode: the calls to the server
+
+const SITES = ['notebooklm.google.com', 'notebook.google.com'];
+
+// captureVisibleTab photographs whatever tab is in front, so first make sure that is the notebook tab that asked.
+async function checkVisible(senderTab) {
+  const tab = await chrome.tabs.get(senderTab.id);
+  let host = '';
+  try { host = new URL(tab.url).hostname; } catch { /* no address */ }
+  if (!tab.active || !SITES.includes(host)) return 'הלשונית של המחברת אינה בחזית, לכן לא מצלמים.';
+  return '';
+}
+
 
 async function settings() {
   const { address = '', key = '' } = await chrome.storage.local.get(['address', 'key']);
@@ -10,6 +23,8 @@ async function settings() {
 async function saveCapture(payload, sender) {
   const { base, key } = await settings();
   if (!base || !key) return { error: 'חסרות הגדרות: כתובת PageLens ומפתח צוות. פתחו את ההגדרות (⚙️).' };
+  const hidden = await checkVisible(sender.tab).catch(() => 'לא הצלחתי לבדוק את הלשונית.');
+  if (hidden) return { error: hidden };
   let image;
   try {
     image = await chrome.tabs.captureVisibleTab(sender.tab.windowId, { format: 'jpeg', quality: 85 });
@@ -39,6 +54,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg && msg.type === 'saveCapture') {
     saveCapture(msg.payload, sender).then(sendResponse, (err) => sendResponse({ error: err.message }));
     return true; // the answer comes later
+  }
+  if (msg && msg.type && msg.type.startsWith('remote')) {
+    remoteMessage(msg, sender).then(sendResponse, (err) => sendResponse({ error: err.message }));
+    return true;
   }
   if (msg && msg.type === 'openSettings') chrome.runtime.openOptionsPage();
 });

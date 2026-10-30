@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "מכין השיעורים (לצוות)",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "לצוות: מסמנים כפתור במסך, שומרים את המסך ב-PageLens, ומכינים ממנו שיעור לילדים.",
   "permissions": [
     "storage",
@@ -36,7 +36,9 @@
         "content/ui.js",
         "content/labels.js",
         "content/picker.js",
+        "content/finder.js",
         "content/actions.js",
+        "content/remote.js",
         "content/views.js",
         "content/main.js"
       ],

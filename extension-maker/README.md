@@ -41,6 +41,18 @@ On PageLens, for 30 days, then deleted automatically:
 **The picture shows whatever is on the screen.** Do not save screens that show personal information, and use test
 notebooks where you can.
 
+## Auto mode (a chat marks and saves the screens)
+
+The button "🤖 מצב אוטומטי" in the panel lets a chat (Claude with the PageLens connector and a **team** key) ask this page for
+two things only: the button and panel names on screen (`remote_labels`), and "mark this button and save the screen"
+(`remote_capture`). It **never clicks or types**: you open each screen, the chat asks for one picture per screen.
+
+- You turn it on each time. A red banner at the top shows a 6-digit **code**, the time left and a stop button.
+- Tell the chat the code. Without it nothing works, and the code only lives while auto mode is on.
+- It stops by itself after 30 minutes (the server enforces this too), when you press stop, or when you close the tab.
+- It works only while the notebook tab is in front; the picture is refused if another tab is in front.
+- Before it starts, it tries one picture to be sure Chrome allows it. If not, click the 📸 icon in the toolbar once and retry.
+
 ## Permissions
 
 `storage` (settings), `activeTab` (the picture, after you click the icon) and access to NotebookLM and the PageLens
@@ -50,4 +62,5 @@ address. The key is kept only in this browser and is sent only to the PageLens a
 
 No file is longer than 200 lines. `background.js` takes the picture and uploads it; `options.*` is the settings page;
 `content/` holds the panel, one file per job (`picker.js` marks the button, `labels.js` collects the names,
-`actions.js` saves, `views.js` draws).
+`actions.js` saves, `views.js` draws). Auto mode: `content/finder.js` (finds a button by name), `content/remote.js`
+(the loop and the banner), `remote.js` (the calls to the server, in the service worker).

@@ -39,6 +39,10 @@
     ));
     if (s.picking) panel.append(h('p', { class: 'hint' }, 'לחצו על הכפתור במסך. (Esc לביטול)'));
 
+    panel.append(h('div', { class: 'auto' },
+      h('button', { disabled: s.busy, onclick: () => (s.remote ? LM.remote.stop() : LM.remote.start()) }, s.remote ? '⏹ עצור מצב אוטומטי' : '🤖 מצב אוטומטי (שיחה מסמנת ושומרת)'),
+      s.remote ? null : h('p', { class: 'hint' }, 'מאפשר לשיחה עם Claude לבקש ממני לבחור כפתור ולשמור את המסך. בלי ללחוץ ובלי להקליד. עד 30 דקות, ותראו כאן למעלה פס אדום עם כפתור עצירה.'),
+    ));
     panel.append(h('button', { class: 'save', disabled: s.busy, onclick: () => a.save() }, s.busy ? 'שומר...' : '📸 שמור מסך'));
     if (s.status) panel.append(h('p', { class: `status ${s.statusKind}`, role: 'status' }, s.status));
     LM.picker.placeFrame();

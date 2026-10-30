@@ -13,6 +13,7 @@
     host,
     root,
     spot: h('div', { class: 'spot', hidden: true }),
+    banner: h('div', { class: 'banner', dir: 'rtl', lang: 'he', role: 'status', hidden: true }),
     panel: h('div', { class: 'panel', dir: 'rtl', lang: 'he', hidden: true }),
     launcher: h('button', {
       class: 'launcher', title: 'מכין השיעורים', 'aria-label': 'מכין השיעורים',
