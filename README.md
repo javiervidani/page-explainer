@@ -94,6 +94,9 @@ overlap too, so totals are slightly too high.
 | `PAGE_CACHE_TTL_S` | Seconds a page is kept after its last use (default 60) |
 | `PAGE_CACHE_MAX` | Pages kept at the same time, 0 turns the cache off (default 3) |
 | `PAGE_CACHE_MAX_AGE_S` | Longest time a page is kept in total (default 300) |
+| `CAPTURE_DAYS` | Days saved lesson screens are kept (default 30) |
+| `CAPTURE_LINK_TTL_S` | Seconds an image link from `get_capture` works (default 3600) |
+| `CAPTURE_SECRET` | Secret that signs image links (default: created once in `data/capture-secret`) |
 | `PW_NO_SANDBOX` | Set to `1` only if Chromium will not start without `--no-sandbox` |
 | `PW_CHROMIUM_PATH` | Optional path to an already-installed Chromium |
 
@@ -134,6 +137,12 @@ set the deploy mode to **Automatic**, copy the **Webhook URL** and add it in Git
 *Settings > Webhooks* (content type `application/json`, push events only).
 Without the webhook, click **Pull Updates** in Plesk after each push.
 
+## Lesson maker (for the team)
+
+Team members save screens from NotebookLM with the `extension-maker/` extension (a button is marked with the yellow
+frame). Team keys see two more tools, `list_captures` and `get_capture`, so a chat can read the screens and make a
+Talkdeck lesson. Screens are kept 30 days. See `docs/lesson-maker.md`.
+
 ## Chrome extension for kids
 
 `extension/` holds a separate Chrome extension (not part of the server) with Hebrew lessons for NotebookLM, for
@@ -141,42 +150,8 @@ children aged 6 to 9. See `extension/README.md` for installing it and writing le
 
 ## Project layout
 
-Rule: **no file is longer than 200 lines**, and logic lives in folders by what it does.
-`node scripts/check-file-size.js` checks it.
-
-```
-app.js                      Express entry: /, /admin/keys, /health, /shots, /mcp
-deploy.sh                   Plesk post-deployment script
-views/index.html            Main page (key generator)
-
-mcp/                        The MCP server
-  server.js                 Creates the server and registers the tools
-  runTool.js                Every tool call: queue, measuring, errors, usage log
-  fields.js                 Input fields shared by the tools, public address
-  tools/                    One file per tool: explainPage, pageOutline, captureArea
-
-services/
-  urlGuard.js               URL validation and SSRF protection
-  keys.js                   Generated API keys with expiry
-  queue.js                  Concurrency limiter (2 running, 10 waiting)
-  usage.js                  Measures and logs CPU, memory, bandwidth per call
-  browser/                  Playwright
-    index.js                Public API: capturePage, getOutline, captureArea, closeBrowser
-    launch.js               The one shared Chromium
-    openPage.js             Opens a page safely (every request and redirect hop is checked)
-    pageCache.js            Pages kept for about a minute
-    withPage.js             Reuses a kept page or opens one
-    constants.js, errors.js, textUtil.js
-    jobs/                   capturePage, getOutline, captureArea
-    pageScripts/            Code that runs inside the page: collectOutline, textInRegion
-
-scripts/                    check-deploy.sh, check-file-size.js, cleanup.js, usage-report.js
-
-extension/                  Chrome extension: Hebrew lessons for kids (separate from the server)
-  manifest.json, background.js
-  content/                  The helper on the page, one file per job (see extension/README.md)
-  lessons/                  Lesson files (plain JSON)
-```
+No file is longer than 200 lines (`node scripts/check-file-size.js` checks it) and logic lives in folders by what
+it does. The full tree is in `docs/project-layout.md`.
 
 ## Next phase
 

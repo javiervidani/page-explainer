@@ -40,6 +40,7 @@ function parseUpload(body) {
     title: text(body.page.title, 120),
     width: num(body.page.width),
     height: num(body.page.height),
+    pixelRatio: Math.round((Number(body.page.pixelRatio) || 1) * 100) / 100, // picture pixels per CSS pixel
   } : null;
 
   return {

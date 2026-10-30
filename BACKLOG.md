@@ -45,24 +45,27 @@ Why: tools like NotebookLM need a login. In the kid's own browser the session is
 - [ ] Chrome Web Store later if it is shared outside the family
 - [ ] Check the age rules of each tool and what the supervised accounts allow
 
-## Next phase: lesson maker for the team (decided, not started)
+## Lesson maker for the team
 Goal: the team builds lessons for the kids from real screens. Team members save screens from NotebookLM, and in a chat Claude turns them into a Talkdeck slide lesson (and into the step file for the kids' extension).
 
 Decisions
-- Two separate extensions: the kids' extension stays as it is (no upload code, no keys, no network); a new **team extension (lesson maker)** adds capture and upload
-- A saved screen looks like what the author sees now, **including the yellow frame on the marked button**
+- Two separate extensions: the kids' extension (no upload code, no keys, no network) and the team extension `extension-maker/`
+- A saved screen includes the yellow frame on the marked button; the maker's own panel is hidden for the picture
 - Talkdeck is the owner's own project, so it can be changed to accept an image link
-- Captures are kept **30 days**, then deleted; only team keys can upload
+- Captures are kept 30 days, then deleted; only team keys can save or read them
 
-Work, in this order
-- [ ] PageLens: upload endpoint for saved screens (team key only, size limit, rate limit), stored under `data/captures/` with project name, note, the button name and position, and the list of visible button names (names only, never notebook content)
-- [ ] PageLens: tools to list the saved screens of a project and to return one as an image with its details; short-lived unguessable image links
-- [ ] PageLens: delete captures after 30 days (in `scripts/cleanup.js`) and log the storage used
-- [ ] Team extension (`extension-maker/`): "pick the button" mode that puts the frame on it, "save this screen" (visible tab, frame included), a note field, settings for the PageLens address and the person's key (kept only in that browser)
-- [ ] Talkdeck: `slide_image_upload` accepts an image `url` and downloads it itself (today only base64, which is too heavy to pass through a chat)
-- [ ] A written recipe for the team: how to save screens, and the chat request that makes the lesson (Hebrew narration, slide text, images attached, build)
-- [ ] From the same saved screens, write the step file for the kids' extension with the exact button names
-- [ ] Team notes: do not save screens that show personal information; captures can show private notebooks
+Done
+- [x] PageLens: `POST /captures` (team keys, size and rate limits), stored in `data/captures/` with note, marked button (name and position), visible button names, page info
+- [x] PageLens: tools `list_captures` and `get_capture` (only for team keys), image links that expire (1 hour) and cannot be guessed
+- [x] PageLens: 30-day cleanup and storage report in `scripts/cleanup.js`; "Team key" option on the key page
+- [x] Team extension: mark a button, note, save screen (frame in the picture, panel hidden), settings page with connection test
+- [x] Recipe for the team and the Talkdeck change, in `docs/lesson-maker.md`
+
+Open
+- [ ] **Talkdeck (the owner's side):** `slide_image_upload` accepts an image `url` (details in `docs/lesson-maker.md`)
+- [ ] Try the whole path on the real NotebookLM: save screens, make a Talkdeck lesson, make the kids' step file
+- [ ] Possibly: delete a saved screen from a chat, rename or reorder steps, blur private parts before saving
+- [ ] Optional: ask for the picture permission once in settings so the toolbar click is not needed for each page
 
 ## Synchronized lessons (to clarify before building)
 Idea: the child opens a Talkdeck lesson (slides with narration) and the extension in NotebookLM follows it, so when the lesson says "press Add sources" the extension frames that button, in step with the slide.
