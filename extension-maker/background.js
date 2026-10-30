@@ -62,6 +62,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg && msg.type === 'openSettings') chrome.runtime.openOptionsPage();
 });
 
+// The icon normally opens or closes the panel. After auto mode was refused for lack of permission, the next click is the
+// permission itself (activeTab), so it must not close the panel: it asks the page to try again instead.
 chrome.action.onClicked.addListener((tab) => {
-  if (tab.id) chrome.tabs.sendMessage(tab.id, { type: 'toggle' }).catch(() => {});
+  if (!tab.id) return;
+  const retry = needGrant.delete(tab.id);
+  chrome.tabs.sendMessage(tab.id, { type: retry ? 'retryArm' : 'toggle' }).catch(() => {});
 });

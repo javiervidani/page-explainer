@@ -10,6 +10,7 @@
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg && msg.type === 'toggle') LM.actions.setOpen(!state.open);
+    if (msg && msg.type === 'retryArm') { LM.actions.setOpen(true); LM.remote.start(); }
   });
   setInterval(LM.picker.placeFrame, 250);
   addEventListener('resize', LM.picker.placeFrame);

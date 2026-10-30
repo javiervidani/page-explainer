@@ -23,6 +23,8 @@ async function remoteCall(path, method, body, timeoutMs) {
   return data;
 }
 
+const needGrant = new Set(); // tabs where auto mode waits for the toolbar click
+
 async function remoteMessage(msg, sender) {
   if (msg.type === 'remoteArm') {
     // Try a picture first (not kept): if Chrome does not allow it, the author hears it now, not in the middle of a chat.
@@ -31,7 +33,8 @@ async function remoteMessage(msg, sender) {
     try {
       await chrome.tabs.captureVisibleTab(sender.tab.windowId, { format: 'jpeg', quality: 20 });
     } catch {
-      return { error: 'כדי להפעיל מצב אוטומטי, לחצו פעם אחת על סמל ההרחבה (📸) בסרגל הכלים, ואז נסו שוב.' };
+      needGrant.add(sender.tab.id);
+      return { error: 'כדי להפעיל מצב אוטומטי, לחצו פעם אחת על סמל ההרחבה (📸) בסרגל הכלים. המצב יופעל מיד, והחלון יישאר פתוח.' };
     }
     const r = await remoteCall('arm', 'POST', { minutes: 30 }, 15000);
     return r.code ? { code: r.code, armedUntil: r.armedUntil } : r;
