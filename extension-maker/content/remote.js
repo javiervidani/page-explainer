@@ -6,11 +6,14 @@
   const s = LM.state;
   const { h } = LM.util;
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const send = (m) => chrome.runtime.sendMessage(m).catch((e) => {
+  // After the extension is updated, an open tab keeps the old page script, and sendMessage then throws at once
+  // (not only as a rejected promise), so both cases are caught here.
+  const failed = (m, e) => {
     LM.log(`${m.type} failed: ${e.message}`);
     const stale = /context invalidated/i.test(e.message);
     return { error: stale ? 'ההרחבה עודכנה, והדף הזה עדיין ישן. רעננו את הדף (F5) ואז נסו שוב.' : `ההרחבה לא הגיבה (${String(e.message).slice(0, 60)}). נסו לרענן את הדף.` };
-  });
+  };
+  const send = async (m) => { try { return await chrome.runtime.sendMessage(m); } catch (e) { return failed(m, e); } };
   let timer = null;
   let timeEl = null;
   let countEl = null;
