@@ -1,20 +1,45 @@
 {
   "manifest_version": 3,
   "name": "עוזר הלמידה",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "עוזר לילדים ללמוד להשתמש ב-NotebookLM: שיעורים קצרים בעברית ומסגרת שמראה איפה ללחוץ.",
-  "permissions": ["storage"],
-  "background": { "service_worker": "background.js" },
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
-      "matches": ["https://notebooklm.google.com/*"],
-      "js": ["content.js"],
+      "matches": [
+        "https://notebooklm.google.com/*"
+      ],
+      "js": [
+        "content/util.js",
+        "content/state.js",
+        "content/styles.js",
+        "content/ui.js",
+        "content/speech.js",
+        "content/finder.js",
+        "content/spotlight.js",
+        "content/actions.js",
+        "content/views.js",
+        "content/main.js"
+      ],
       "run_at": "document_idle"
     }
   ],
   "action": {
     "default_title": "עוזר הלמידה",
-    "default_icon": { "16": "icons/16.png", "32": "icons/32.png" }
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png"
+    }
   },
-  "icons": { "16": "icons/16.png", "32": "icons/32.png", "48": "icons/48.png", "128": "icons/128.png" }
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  }
 }

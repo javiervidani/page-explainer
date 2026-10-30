@@ -15,6 +15,7 @@ Order is roughly the order I would do things. Update the status as work moves.
 - [x] Main page: generate expiring API keys (1, 7, 30 or 90 days) behind an admin password
 - [x] Team testing: key label per person, connector URL (`/mcp?key=...`) for URL-only connector screens
 - [x] Usage log per call: CPU, memory, bandwidth (`data/usage-*.jsonl`, `node scripts/usage-report.js`)
+- [x] Code split into folders, no file over 200 lines (`services/browser/`, `mcp/tools/`, `extension/content/`), checked by `node scripts/check-file-size.js`
 - [x] Short page cache: the loaded page is kept about 60 seconds per key, URL and viewport (max 3 pages, offline while idle), so `page_outline` then `capture_area` does not reload it; `refresh: true` forces a reload; usage log has a `cache` field
 - [x] Explain parts of a page: `page_outline` (regions with selectors and positions, headings, buttons, RTL detection) and `capture_area` (one area by CSS selector or pixel region, returned as an inline image plus the text inside it); `explain_page` got `viewport` (desktop or mobile) and `fullPage` options
 

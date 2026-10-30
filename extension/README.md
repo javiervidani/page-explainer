@@ -70,6 +70,26 @@ Open a lesson file in any text editor; keep the quotes, commas and brackets exac
   To find the right word, open NotebookLM and copy the exact text of the button.
 - Advanced: `show.selector` takes a CSS selector, which is tried first.
 
+## How the code is organised
+
+No file is longer than 200 lines. The files in `content/` load in the order listed in `manifest.json`
+and share one object, `window.KidHelper`:
+
+| File | Job |
+|---|---|
+| `util.js` | small helpers (building elements, checking visibility) |
+| `state.js` | what is shown now, and what is remembered on this computer |
+| `styles.js` | how the panel and the yellow frame look |
+| `ui.js` | the elements put on the page (in a shadow root) |
+| `speech.js` | reading a step aloud |
+| `finder.js` | finding the button or panel a step talks about |
+| `spotlight.js` | the yellow frame |
+| `actions.js` | what happens when something is pressed |
+| `views.js` | drawing the lesson list and the steps |
+| `main.js` | starting everything |
+
+`background.js` loads the lesson files and handles the toolbar button.
+
 ## Notes
 
 - The lesson text was written as a first draft: please read it and change anything that does not match how
