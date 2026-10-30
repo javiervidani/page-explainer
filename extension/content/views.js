@@ -31,7 +31,7 @@
     for (const l of lessons) {
       panel.append(h('button', { class: 'card', onclick: () => a.openLesson(l) },
         h('span', { class: 'big' }, l.emoji || '📘'),
-        h('span', { class: 'cardtext' }, h('b', {}, l.title), h('small', {}, l.age || '')),
+        h('span', { class: 'cardtext' }, h('b', {}, l.title), h('small', {}, [l.age, l.autoplay ? '▶️ שיעור מנוגן' : ''].filter(Boolean).join(' · '))),
         s.done[l.id] ? h('span', { class: 'star', title: 'סיימנו!' }, '⭐') : null,
       ));
     }
@@ -47,6 +47,7 @@
     panel.append(h('div', { class: 'dots', 'aria-hidden': 'true' },
       lesson.steps.map((_, i) => h('i', { class: i === s.step ? 'on' : i < s.step ? 'past' : '' }))));
     panel.append(h('p', { class: 'count' }, `שלב ${s.step + 1} מתוך ${lesson.steps.length}`));
+    if (step.slide) panel.append(h('img', { class: 'slide', src: chrome.runtime.getURL(`lessons/${step.slide}`), alt: step.title }));
     panel.append(h('h2', { class: 'stepTitle' }, step.title));
     panel.append(h('p', { class: 'text' }, step.text));
     if (s.more && step.more) panel.append(h('p', { class: 'more' }, step.more));
@@ -55,6 +56,7 @@
     panel.append(KH.ui.statusEl);
 
     panel.append(h('div', { class: 'tools' },
+      lesson.autoplay ? h('button', { class: `tool ${s.playing ? 'active' : ''}`, onclick: () => a.togglePlay() }, s.playing ? '⏸ עצור' : '▶️ נגן') : null,
       h('button', { class: 'tool', onclick: () => a.readStep() }, '🔊 להקריא'),
       step.show ? h('button', { class: 'tool', onclick: () => a.showAgain() }, '👀 הראה לי') : null,
       step.more ? h('button', { class: 'tool', onclick: () => a.toggleMore() }, s.more ? '💡 פחות' : '💡 עוד קצת') : null,

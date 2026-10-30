@@ -67,11 +67,18 @@ Open
 - [ ] Possibly: delete a saved screen from a chat, rename or reorder steps, blur private parts before saving
 - [ ] Optional: ask for the picture permission once in settings so the toolbar click is not needed for each page
 
-## Synchronized lessons (to clarify before building)
-Idea: the child opens a Talkdeck lesson (slides with narration) and the extension in NotebookLM follows it, so when the lesson says "press Add sources" the extension frames that button, in step with the slide.
-- [ ] Decide where the lesson plays (inside the extension panel, another tab, or next to NotebookLM) and who drives (the lesson moves the extension, the child's "next" button moves both, or both)
-- [ ] One source for both: each slide carries the name of the button it talks about, so slides and extension steps stay matched
-- [ ] Talkdeck player reports the current slide and accepts "go to slide" (needed for any sync)
+## Synchronized lessons
+Idea: a lesson plays while the extension follows it on the real page: slide and narration in the panel, yellow frame on the button, in step. Details in `docs/synchronized-lessons.md`.
+
+Done
+- [x] Kids' extension plays lessons by itself (`autoplay`): slide, narration (audio file or Hebrew voice, or timed silence), frame, pause and play, back and forward
+- [x] First example: `notebooklm-synced-demo` in the extension, and the same lesson in Talkdeck (lesson id `lesson`, voice Osnat4, audio built)
+
+Open
+- [ ] Try it on the real NotebookLM and on the kids' PC (Hebrew voice, speed, whether the child follows)
+- [ ] Export script: Talkdeck lesson (or saved screens) to an extension lesson file with pictures and audio (Talkdeck's built files live on its own machine)
+- [ ] Decide whether the Talkdeck player and the extension should also follow each other live (needs the player to report the current slide and accept "go to slide"; Google's page may refuse to show an outside player, so a lesson pack is the safer way)
+- [ ] Decide what happens when the child does something different from the lesson (wait, skip, or ask)
 
 ## Later: companies (do not start)
 - [ ] Help employees with internal systems and forms (extension for logged-in internal tools, guidance on the page)

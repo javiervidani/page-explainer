@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "עוזר הלמידה",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "עוזר לילדים ללמוד להשתמש ב-NotebookLM: שיעורים קצרים בעברית ומסגרת שמראה איפה ללחוץ.",
   "permissions": [
     "storage"
@@ -21,6 +21,7 @@
         "content/styles.js",
         "content/ui.js",
         "content/speech.js",
+        "content/player.js",
         "content/finder.js",
         "content/spotlight.js",
         "content/actions.js",
@@ -42,5 +43,16 @@
     "32": "icons/32.png",
     "48": "icons/48.png",
     "128": "icons/128.png"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "lessons/media/*"
+      ],
+      "matches": [
+        "https://notebooklm.google.com/*",
+        "https://notebook.google.com/*"
+      ]
+    }
+  ]
 }

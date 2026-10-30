@@ -12,6 +12,7 @@
     done: {},            // lesson id -> true, shown as a star
     more: false,         // "a bit more" text open
     autoRead: false,
+    playing: false,      // a lesson that plays by itself is running
     target: null,        // the page element the current step points at
     scrolled: false,
     lastSearch: 0,

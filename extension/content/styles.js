@@ -19,6 +19,7 @@
     .dots { display: flex; gap: 5px; margin: 6px 0 2px; }
     .dots i { width: 12px; height: 12px; border-radius: 50%; background: #ddd; display: block; }
     .dots i.past { background: #9d8cf7; } .dots i.on { background: #6c4ff5; outline: 3px solid #cfc7fb; }
+    .slide { display: block; width: 100%; margin: 6px 0; border-radius: 12px; border: 2px solid #cfc7fb; }
     .count { margin: 4px 0 0; font-size: 14px; color: #666; }
     .stepTitle { margin: 4px 0 6px; font-size: 26px; line-height: 1.25; color: #222; }
     .text { margin: 0 0 8px; font-size: 21px; }

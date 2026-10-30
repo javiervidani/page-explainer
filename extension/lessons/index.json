@@ -1,3 +1,7 @@
 {
-  "lessons": ["notebooklm-intro.json", "notebooklm-audio.json"]
+  "lessons": [
+    "notebooklm-intro.json",
+    "notebooklm-audio.json",
+    "notebooklm-synced-demo.json"
+  ]
 }

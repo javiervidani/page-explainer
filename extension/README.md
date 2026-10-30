@@ -70,6 +70,13 @@ Open a lesson file in any text editor; keep the quotes, commas and brackets exac
   To find the right word, open NotebookLM and copy the exact text of the button.
 - Advanced: `show.selector` takes a CSS selector, which is tried first.
 
+## Lessons that play by themselves
+
+A lesson with `"autoplay": true` plays like a short slide show: it shows a slide, tells the narration (an audio file from the
+lesson, or the computer's Hebrew voice), frames the matching button on the page, waits a moment and moves to the next step.
+The child can pause (⏸), go back and forward, and replay. The example is "שיעור מנוגן: סקירה קולית". The step format
+(`slide`, `audio`, `narration`, `pauseSeconds`) is in `docs/synchronized-lessons.md`.
+
 ## How the code is organised
 
 No file is longer than 200 lines. The files in `content/` load in the order listed in `manifest.json`
@@ -82,6 +89,7 @@ and share one object, `window.KidHelper`:
 | `styles.js` | how the panel and the yellow frame look |
 | `ui.js` | the elements put on the page (in a shadow root) |
 | `speech.js` | reading a step aloud |
+| `player.js` | playing a lesson by itself (narration, then the next step) |
 | `finder.js` | finding the button or panel a step talks about |
 | `spotlight.js` | the yellow frame |
 | `actions.js` | what happens when something is pressed |

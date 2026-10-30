@@ -137,6 +137,11 @@ set the deploy mode to **Automatic**, copy the **Webhook URL** and add it in Git
 *Settings > Webhooks* (content type `application/json`, push events only).
 Without the webhook, click **Pull Updates** in Plesk after each push.
 
+## Synchronized lessons
+
+The kids' extension can play a lesson by itself, with slides, narration and the yellow frame on the real page. One
+example exists, also built in Talkdeck. See `docs/synchronized-lessons.md`.
+
 ## Lesson maker (for the team)
 
 Team members save screens from NotebookLM with the `extension-maker/` extension (a button is marked with the yellow

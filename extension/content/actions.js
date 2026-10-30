@@ -5,7 +5,7 @@
 
   function setOpen(open) {
     s.open = open;
-    if (!open) KH.speech.stop();
+    if (!open) KH.player.stop();
     KH.views.render();
   }
 
@@ -18,16 +18,19 @@
     s.status = '';
     KH.views.render();
     const step = s.lesson.steps[i];
-    if (s.autoRead) KH.speech.speak(`${step.title}. ${step.text}`);
+    if (s.playing) KH.player.playStep();
+    else if (s.autoRead) KH.speech.speak(`${step.title}. ${step.text}`);
     KH.spotlight.tick();
   }
 
   function openLesson(lesson) {
     s.lesson = lesson;
+    s.playing = !!lesson.autoplay; // a lesson made to play starts playing
     goTo(0);
   }
 
   function backToList() {
+    KH.player.stop();
     s.lesson = null;
     s.target = null;
     KH.views.render();
@@ -36,7 +39,6 @@
   function finishLesson() {
     s.done[s.lesson.id] = true;
     KH.store.save();
-    KH.speech.stop();
     backToList();
   }
 
@@ -65,10 +67,15 @@
     KH.views.render();
   }
 
+  function togglePlay() {
+    KH.player.setPlaying(!s.playing);
+    KH.views.render();
+  }
+
   function toggleMore() {
     s.more = !s.more;
     KH.views.render();
   }
 
-  KH.actions = { setOpen, goTo, openLesson, backToList, finishLesson, readStep, showAgain, toggleSide, toggleAutoRead, toggleMore };
+  KH.actions = { setOpen, goTo, openLesson, backToList, finishLesson, readStep, showAgain, toggleSide, toggleAutoRead, toggleMore, togglePlay };
 })();
