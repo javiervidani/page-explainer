@@ -1,5 +1,11 @@
 # Backlog
 
+## Product direction (decided)
+- **Main goal:** help the owner's kids learn how to use LLM tools such as NotebookLM and image creation tools.
+- **Audience now:** public use, starting with the family. Internal company systems and employee form help are **not started** (see "Later: companies").
+- **Where the explanations live:** full lessons written by the owner, added later. Until then the answers appear in a chat (Claude or GPT through the connector).
+- **Logged-in tools (NotebookLM, image tools):** read in the kid's own Chrome through an extension, not by the server (see "Chrome extension").
+
 Order is roughly the order I would do things. Update the status as work moves.
 
 ## Done
@@ -24,6 +30,24 @@ Order is roughly the order I would do things. Update the status as work moves.
 - [ ] Pick an area by visible text or role (for example "the button named Subscribe"), not only by selector
 - [ ] `scroll` option to capture content that only loads while scrolling (lazy loading)
 - [ ] Pages behind a login (needs cookies or a browser extension; security review first)
+
+## Chrome extension (next)
+Why: tools like NotebookLM need a login. In the kid's own browser the session is already there, nothing secret leaves the computer, and the server cannot (and should not) do it.
+- [ ] Decide the language and reading level of the lessons (Hebrew, right-to-left, kids' ages) and which tools come first
+- [ ] Minimal extension (Manifest V3): side panel that recognises the tool the kid is on (for example NotebookLM) and shows the matching lesson
+- [ ] Lessons as simple files the owner can write and edit (title, steps, text, pictures); no coding needed to add a lesson
+- [ ] "Show me" button: highlight the button or area a step talks about, using the outline and selector code from PageLens
+- [ ] Works fully on the computer at first: no page content is sent anywhere
+- [ ] Optional later: "ask about this page" with an LLM, with the parent's consent and no personal data sent
+- [ ] Install for the family by loading it unpacked (no store needed); Chrome Web Store later if it is shared
+- [ ] Check what the kids' Chrome allows (school or supervised accounts may block extensions) and the age rules of each tool
+
+## Later: companies (do not start)
+- [ ] Help employees with internal systems and forms (extension for logged-in internal tools, guidance on the page)
+- [ ] `page_forms` tool: every field of a form (label, required, type, help text, buttons) so a model can explain how to fill it
+- [ ] Company login (Google or Microsoft), company rules and instructions, admin page, audit logs
+- [ ] Privacy for forms: never send typed values or password and card fields; short retention
+- [ ] Self-hosted option for companies that need it
 
 ## Key management
 - [ ] List keys (label, created, expires, last used, calls) on the main page
