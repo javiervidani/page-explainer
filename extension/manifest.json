@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "עוזר הלמידה",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "עוזר לילדים ללמוד להשתמש ב-NotebookLM: שיעורים קצרים בעברית ומסגרת שמראה איפה ללחוץ.",
   "permissions": [
     "storage"
@@ -12,7 +12,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://notebooklm.google.com/*"
+        "https://notebooklm.google.com/*",
+        "https://notebook.google.com/*"
       ],
       "js": [
         "content/util.js",

@@ -24,7 +24,7 @@
 
   function renderList(panel) {
     const s = KH.state;
-    const lessons = s.lessons.filter((l) => l.site === location.hostname);
+    const lessons = s.lessons.filter((l) => [].concat(l.sites || l.site || []).includes(location.hostname));
     panel.append(header('עוזר הלמידה', '🦉'));
     panel.append(h('p', { class: 'text' }, 'מה נלמד היום?'));
     if (lessons.length === 0) panel.append(h('p', { class: 'note' }, 'אין עדיין שיעורים לאתר הזה.'));

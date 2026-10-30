@@ -1,6 +1,9 @@
 {
   "id": "notebooklm-audio",
-  "site": "notebooklm.google.com",
+  "sites": [
+    "notebooklm.google.com",
+    "notebook.google.com"
+  ],
   "title": "להקשיב לסיכום",
   "emoji": "🎧",
   "age": "גיל 6 ומעלה",
@@ -8,18 +11,35 @@
     {
       "title": "קודם מקורות ➕",
       "text": "כדי להכין שיחה להקשבה צריך לפחות מקור אחד. נוסיף משהו שמבוגר מאשר.",
-      "show": { "text": ["הוספת מקורות", "Add sources", "Add source"] }
+      "show": {
+        "text": [
+          "הוספת מקורות",
+          "Add sources",
+          "Add source"
+        ]
+      }
     },
     {
       "title": "פותחים את הסטודיו 🎨",
       "text": "הסטודיו הוא החלק שבו המחברת יוצרת דברים חדשים.",
-      "show": { "text": ["סטודיו", "Studio"], "scope": "panel" }
+      "show": {
+        "text": [
+          "סטודיו",
+          "Studio"
+        ],
+        "scope": "panel"
+      }
     },
     {
       "title": "לוחצים על סקירה קולית",
       "text": "אחרי הלחיצה מחכים כמה דקות. כשזה מוכן לוחצים על הנגן ומקשיבים. 🎧",
       "more": "המחשב מכין שיחה בין שני קולות על המקורות שלכם. זה לא אנשים אמיתיים.",
-      "show": { "text": ["סקירה קולית", "Audio Overview"] }
+      "show": {
+        "text": [
+          "סקירה קולית",
+          "Audio Overview"
+        ]
+      }
     },
     {
       "title": "מקשיבים ובודקים 🤔",
