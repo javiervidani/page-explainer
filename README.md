@@ -154,6 +154,10 @@ Talkdeck lesson. With **auto mode** on in the extension, a chat that has the aut
 `extension/` holds a separate Chrome extension (not part of the server) with Hebrew lessons for NotebookLM, for
 children aged 6 to 9. See `extension/README.md` for installing it and writing lessons.
 
+The main page (`/`) has download links for both extensions (this one and the team lesson maker). `GET /downloads` lists them
+with their versions, and `GET /downloads/helper.zip` and `/downloads/lesson-maker.zip` make a ZIP from the deployed folders
+(`routes/downloads.js`, `services/zip.js`), so a download is always the version that is live. Neither ZIP holds a key.
+
 ## Project layout
 
 No file is longer than 200 lines (`node scripts/check-file-size.js` checks it) and logic lives in folders by what

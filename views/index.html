@@ -30,6 +30,14 @@
   .note { color:var(--muted); font-size:.9rem; margin:8px 0 0; }
   .ok { color:var(--ok); font-weight:600; margin:0 0 12px; }
   code { font-family:ui-monospace, monospace; word-break:break-all; }
+  #ext { margin-top:20px; }
+  #ext h2 { margin:0 0 4px; font-size:1.15rem; }
+  #ext ul { list-style:none; margin:12px 0; padding:0; }
+  #ext li { padding:10px 0; border-top:1px solid var(--line); }
+  #ext li:first-child { border-top:0; }
+  #ext a.dl { display:inline-block; padding:8px 14px; border-radius:8px; background:var(--accent); color:#fff; font-weight:600; text-decoration:none; }
+  #ext code { word-break:normal; }
+  #ext .what { margin:6px 0 0; color:var(--muted); font-size:.9rem; }
 </style>
 </head>
 <body>
@@ -72,10 +80,29 @@
       <p class="note">Clients that can set headers: use <code id="url"></code> and send the key as <code>x-api-key</code> or <code>Authorization: Bearer</code>.</p>
     </div>
   </form>
+
+  <section class="card" id="ext">
+    <h2>Chrome extensions</h2>
+    <p class="note">Download the ZIP, unzip it, then open <code>chrome://extensions</code> (Edge: <code>edge://extensions</code>), turn on <strong>Developer mode</strong>, press <strong>Load unpacked</strong> and choose the unzipped folder (the one that contains <code>manifest.json</code>). Reload the notebook tab afterwards.</p>
+    <ul>
+      <li><a class="dl" href="/downloads/helper.zip" download>Learning helper</a> <span class="ver" data-id="helper"></span>
+        <p class="what">For the children: short lessons in Hebrew on NotebookLM / Gemini Notebook, with a yellow frame on the button.</p></li>
+      <li><a class="dl" href="/downloads/lesson-maker.zip" download>Lesson maker</a> <span class="ver" data-id="lesson-maker"></span>
+        <p class="what">For the team: marks a button and saves the screen to PageLens. Needs a team key (typed in the extension's settings).</p></li>
+    </ul>
+  </section>
 </main>
 <script>
   const $ = (id) => document.getElementById(id);
   $('url').textContent = location.origin + '/mcp';
+
+  // Show the version next to each download (the links work without this).
+  fetch('/downloads').then((r) => r.json()).then((list) => {
+    for (const e of list) {
+      const span = document.querySelector(`.ver[data-id="${e.id}"]`);
+      if (span) span.textContent = `version ${e.version}`;
+    }
+  }).catch(() => {});
 
   $('form').addEventListener('submit', async (e) => {
     e.preventDefault();

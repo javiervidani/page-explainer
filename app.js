@@ -11,6 +11,7 @@ const { closeBrowser } = require('./services/browser');
 const { createKey, verifyKey, ALLOWED_DAYS } = require('./services/keys');
 const { capturesRoutes } = require('./routes/captures');
 const { remoteRoutes } = require('./routes/remote');
+const { downloadsRoutes } = require('./routes/downloads');
 const { version } = require('./package.json');
 
 const startedAt = new Date().toISOString();
@@ -76,6 +77,7 @@ const limiter = rateLimit({
 
 app.use('/captures', capturesRoutes({ requireApiKey, requireTeam, clientIp }));
 app.use('/remote', remoteRoutes({ requireApiKey, requireTeam, clientIp }));
+app.use('/downloads', downloadsRoutes({ clientIp }));
 
 // Main page and key generation (protected by ADMIN_PASSWORD).
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'index.html')));

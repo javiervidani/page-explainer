@@ -6,6 +6,8 @@ Rule: **no file is longer than 200 lines**, and logic lives in folders by what i
 ```
 app.js                      Express entry: /, /admin/keys, /health, /shots, /mcp, /captures
 routes/captures.js          Upload of saved screens (team keys) and signed image links
+routes/downloads.js         /downloads: ZIP of each Chrome extension, made from its folder
+routes/remote.js            Auto mode (team keys): arm, next, result, stop
 deploy.sh                   Plesk post-deployment script
 views/index.html            Main page (key generator)
 
@@ -18,6 +20,7 @@ mcp/                        The MCP server
 
 services/
   urlGuard.js               URL validation and SSRF protection
+  zip.js                    Makes a ZIP from a folder (no package needed)
   keys.js                   Generated API keys with expiry
   queue.js                  Concurrency limiter (2 running, 10 waiting)
   captures/                 Saved lesson screens: store, validate, signing
