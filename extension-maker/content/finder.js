@@ -31,5 +31,17 @@
     return null;
   }
 
-  LM.finder = { find };
+  // The part of the window to keep when only the area around the marked thing is wanted: the thing plus a margin, at least
+  // 480x320 (a button alone would be a tiny, useless picture), and never outside the window. In CSS pixels.
+  function cropBox(el) {
+    const r = el.getBoundingClientRect();
+    const pad = 16;
+    const w = Math.min(innerWidth, Math.max(480, r.width + 2 * pad));
+    const h = Math.min(innerHeight, Math.max(320, r.height + 2 * pad));
+    const x = Math.min(Math.max(0, r.left + r.width / 2 - w / 2), innerWidth - w);
+    const y = Math.min(Math.max(0, r.top + r.height / 2 - h / 2), innerHeight - h);
+    return { x: Math.round(x), y: Math.round(y), width: Math.round(w), height: Math.round(h) };
+  }
+
+  LM.finder = { find, cropBox };
 })();

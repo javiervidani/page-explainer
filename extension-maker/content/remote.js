@@ -91,12 +91,19 @@
   async function handle(cmd) {
     if (document.hidden) return { ok: false, error: 'הלשונית של המחברת ברקע. בקשו מהכותב להעביר אותה לחזית.' };
     if (cmd.type === 'labels') return { ok: true, labels: LM.labels.collectLabels(), page: location.hostname };
-    if (cmd.type === 'capture') return capture(cmd.args);
+    if (cmd.type === 'capture') return captureAll(cmd.args);
     return { ok: false, error: 'unknown command' };
   }
 
+  // One or more pictures of the open screen, each with its own frame. A shot that fails says why; the others are still saved.
+  async function captureAll({ project, shots }) {
+    const out = [];
+    for (const shot of shots) out.push(await capture({ ...shot, project }));
+    return { ok: out.every((x) => x.ok), shots: out };
+  }
+
   // Marks the named button (or panel) with the yellow frame, takes the picture, puts everything back as it was.
-  async function capture({ find, scope, note, project }) {
+  async function capture({ find, scope, note, project, crop }) {
     if (s.busy) return { ok: false, error: 'The author is saving a screen right now. Try again in a moment.' };
     const found = LM.finder.find(find, scope);
     if (!found) return { ok: false, error: `Not found on screen: ${find.join(', ')}. Use remote_labels to see the names.` };
@@ -106,7 +113,7 @@
     s.targetLabel = LM.util.labelOf(found.el);
     LM.picker.placeFrame();
     await sleep(150);
-    const r = await LM.actions.takePicture({ project, note, target: s.target, targetLabel: s.targetLabel });
+    const r = await LM.actions.takePicture({ project, note, target: s.target, targetLabel: s.targetLabel, crop: crop ? LM.finder.cropBox(found.el) : null });
     const marked = s.targetLabel;
     s.target = before.target;
     s.targetLabel = before.label;

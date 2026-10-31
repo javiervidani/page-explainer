@@ -38,12 +38,13 @@
   }
 
   // Everything the server needs besides the picture. Box positions are in the picture's own (CSS pixel) units.
-  function collectPayload({ project, note, target, targetLabel }) {
+  function collectPayload({ project, note, target, targetLabel, crop }) {
     const r = target && target.isConnected ? target.getBoundingClientRect() : null;
     return {
       project: project.trim(),
       note: (note || '').trim(),
       target: r ? { label: targetLabel, box: { x: r.left, y: r.top, width: r.width, height: r.height } } : null,
+      crop: crop || null, // the background part keeps only this box of the picture (and moves the frame's box with it)
       labels: LM.labels.collectLabels(),
       page: {
         host: location.hostname, path: location.pathname, title: document.title,

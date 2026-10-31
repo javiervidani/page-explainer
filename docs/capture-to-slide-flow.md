@@ -67,3 +67,16 @@ checked by bytes.
 - The pink message "לחצו פעם אחת על סמל ההרחבה": click the extension itself in the browser's 🧩 menu once (Edge hides it until
   pinned). Auto mode then starts and the panel stays open.
 - The "📋 יומן" button in the panel copies the log (worker and page lines, no key, no pictures) to paste into a chat.
+
+## Shortcuts (server 1.7.0, extension 0.3.0)
+
+- **`crop: true`** in `remote_capture`: only the part around the marked button or panel is saved (at least 480x320 CSS pixels, with a
+  small margin, never outside the window). The text is bigger on a slide. The yellow frame's saved box moves with the crop, so
+  `get_capture` still gives positions in the picture's own units.
+- **`shots: [...]`** in `remote_capture`: up to 5 pictures of the same open screen in one call, each with its own `find`, `scope`,
+  `note` and `crop`. One shot keeps the old answer; several give `{saved, shots:[{ok,id,marked|error}]}`. A shot that is not found
+  says why, and the others are still saved.
+- **`lesson_from_captures(project)`** (team key, changes nothing): one draft slide per saved screen, in saved order, with `title`
+  (the marked button), `layout: "snapshot"`, `source`, `show.text`, `screen` (the author's note) and the picture link. `text` (the
+  narration) is empty on purpose. The chat writes it, makes `screen` differ from `title`, then calls `slide_add`,
+  `slide_image_upload` and `lesson_build` as in steps 11-13.

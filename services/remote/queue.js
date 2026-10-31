@@ -7,6 +7,7 @@ const store = require('./store');
 const { active, status, RemoteError } = require('./sessions');
 
 const MAX_COMMANDS = 60;          // per session
+const MAX_SHOTS = 5;              // pictures in one capture command
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const str = (v, max) => String(v ?? '').trim().slice(0, max);
 
@@ -14,11 +15,17 @@ const str = (v, max) => String(v ?? '').trim().slice(0, max);
 function cleanCommand(type, args = {}) {
   if (type === 'labels') return {};
   if (type !== 'capture') throw new RemoteError('unknown command', 400);
-  const find = (Array.isArray(args.find) ? args.find : []).map((f) => str(f, 40)).filter(Boolean).slice(0, 5);
-  if (!find.length) throw new RemoteError('find: give 1 to 5 button or panel names', 400);
   const project = str(args.project, 40).replace(/[^\p{L}\p{N} ._-]/gu, '').trim();
   if (!project) throw new RemoteError('project: a name is required', 400);
-  return { find, scope: args.scope === 'panel' ? 'panel' : 'element', note: str(args.note, 500), project };
+  // One screen is a "shot"; `shots` asks for several on the same open screen (one picture each, one frame each).
+  const raw = Array.isArray(args.shots) && args.shots.length ? args.shots : [args];
+  if (raw.length > MAX_SHOTS) throw new RemoteError(`shots: at most ${MAX_SHOTS} per call`, 400);
+  const shots = raw.map((a, i) => {
+    const find = (Array.isArray(a.find) ? a.find : []).map((f) => str(f, 40)).filter(Boolean).slice(0, 5);
+    if (!find.length) throw new RemoteError(`find: give 1 to 5 button or panel names${raw.length > 1 ? ` (shot ${i + 1})` : ''}`, 400);
+    return { find, scope: a.scope === 'panel' ? 'panel' : 'element', note: str(a.note, 500), crop: a.crop === true };
+  });
+  return { project, shots };
 }
 
 // Puts a command in the queue. The session has to be armed and the extension has to be asking for work.

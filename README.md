@@ -147,7 +147,7 @@ example exists, also built in Talkdeck. See `docs/synchronized-lessons.md`.
 Team members save screens from NotebookLM with the `extension-maker/` extension (a button is marked with the yellow
 frame). Team keys see two more tools, `list_captures` and `get_capture`, so a chat can read the screens and make a
 Talkdeck lesson. With **auto mode** on in the extension, a chat that has the author's 6-digit code can also choose the buttons
-(`remote_labels`, `remote_capture`): mark and save only, 30 minutes, stop button. Screens are kept 30 days. See `docs/lesson-maker.md` and `docs/capture-to-slide-flow.md`.
+(`remote_labels`, `remote_capture`): mark and save only, 30 minutes, stop button. `remote_capture` can crop and take several pictures in one call, and `lesson_from_captures` drafts the slides. Screens are kept 30 days. See `docs/lesson-maker.md` and `docs/capture-to-slide-flow.md`.
 
 ## Chrome extension for kids
 
