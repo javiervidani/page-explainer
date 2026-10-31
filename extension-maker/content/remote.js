@@ -110,7 +110,7 @@
     const before = { target: s.target, label: s.targetLabel };
     found.el.scrollIntoView({ block: 'nearest' });
     s.target = found.el;
-    s.targetLabel = LM.util.labelOf(found.el);
+    s.targetLabel = scope === 'panel' ? found.name : LM.util.labelOf(found.el); // a panel has no name of its own (it was "div")
     LM.picker.placeFrame();
     await sleep(150);
     const r = await LM.actions.takePicture({ project, note, target: s.target, targetLabel: s.targetLabel, crop: crop ? LM.finder.cropBox(found.el) : null });
