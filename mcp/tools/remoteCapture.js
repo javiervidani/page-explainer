@@ -7,12 +7,16 @@ const { status } = require('../../services/remote/sessions');
 const { asText } = require('./listCaptures');
 
 const code = z.string().regex(/^\d{6}$/).describe('The 6-digit code the author reads from the banner of the extension (auto mode)');
+// Some clients send every value as text, so "true" is accepted as true and a JSON text as a list.
+const asBool = (v) => (v === 'true' ? true : v === 'false' ? false : v);
+const asList = (v) => { if (typeof v !== 'string') return v; try { return JSON.parse(v); } catch { return v; } };
+
 // One shot: what to look for and how to take it.
 const shotFields = {
-  find: z.array(z.string().min(1).max(40)).min(1).max(5).optional().describe('Button or panel names to look for, best first (as shown on screen)'),
+  find: z.preprocess(asList, z.array(z.string().min(1).max(40)).min(1).max(5).optional()).describe('Button or panel names to look for, best first (as shown on screen)'),
   scope: z.enum(['element', 'panel']).optional().describe("'panel' frames the whole panel that holds the name"),
   note: z.string().max(500).optional().describe('Short note saved with the screen (what this step is about)'),
-  crop: z.boolean().optional().describe('true: save only the part of the screen around the marked button or panel (bigger text on a slide)'),
+  crop: z.preprocess(asBool, z.boolean().optional()).describe('true: save only the part of the screen around the marked button or panel (bigger text on a slide)'),
 };
 const toError = (err) => ({ isError: true, content: [{ type: 'text', text: err.status ? err.message : 'Remote capture failed' }] });
 
@@ -49,7 +53,7 @@ function registerRemoteCapture(server) {
         code,
         project: z.string().min(1).max(40).describe('Lesson project name the screen is saved into'),
         ...shotFields,
-        shots: z.array(z.object(shotFields)).min(1).max(5).optional().describe(
+        shots: z.preprocess(asList, z.array(z.object(shotFields)).min(1).max(5).optional()).describe(
           'Several pictures of the same open screen in one call, each with its own frame (each shot has find, scope, note, crop). ' +
           'Use it instead of the fields above.'),
       },
