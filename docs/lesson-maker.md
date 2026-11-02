@@ -59,6 +59,6 @@ the red banner to the chat. Two more tools then appear for team keys:
 - `remote_capture({ code, project, find: ["סקירה קולית"], scope?, note? })` marks the first name found (yellow frame),
   saves the screen into the project, and returns the capture id. `list_captures` lists it like any other screen.
 
-Rules: it never clicks or types (the author opens each screen); 30 minutes at most; 60 requests per session; only the
+Rules: by default it never clicks or types (the author opens each screen); with the author's tick it may press one button by its exact name and type in the notebook's question box only, within the limits in `extension-maker/README.md`; 30 minutes at most; 60 requests per session; only the
 notebook tab while it is in front; the author can stop it at any moment. A session is a folder in `data/remote/<code>/`
 (a command and an answer per file), so several app copies see the same session.

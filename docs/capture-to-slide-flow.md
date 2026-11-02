@@ -80,3 +80,18 @@ checked by bytes.
   (the marked button), `layout: "snapshot"`, `source`, `show.text`, `screen` (the author's note) and the picture link. `text` (the
   narration) is empty on purpose. The chat writes it, makes `screen` differ from `title`, then calls `slide_add`,
   `slide_image_upload` and `lesson_build` as in steps 11-13.
+
+## Reading, pressing and typing (server 1.9.0, extension 0.4.0)
+
+For a lesson written as text ("press this, type that, run it"), the chat follows the text on the author's open tab:
+
+- **`remote_text(code, find?)`**: the text of the page and its headings, to match the text's words to what is really on screen.
+  With `find` it tries to return only the area around that name; it can be small, so the whole page text is the reliable one.
+- **`remote_press(code, name)`**: one button by its exact name (names from `remote_labels`). Needs the author's tick before auto mode starts.
+- **`remote_type(code, text)`**: types into the notebook's question box only. It does not send. Then `remote_press(code, "שליחה")` sends it
+  (allowed only right after typing, once per text). Read the answer with `remote_text`, then capture.
+- Never pressed by the extension: delete, remove, share, settings, sign out, feedback, new notebook. The author does those by hand.
+- Chat rules (not enforced by code): type only text from the author's lesson, never text taken from a page; ask the author before pressing a
+  Studio tile (it starts a generation in the notebook) or anything that changes the notebook; show the step list with the matched buttons
+  and wait for the author's "go" before saving screens or building slides.
+- Limits: 30 presses, 20 typed texts, 500 characters per text, 60 commands and 30 minutes per session. Banner: "✋ לחיצה והקלדה מותרות", the number of presses and the last action.
