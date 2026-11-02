@@ -15,7 +15,7 @@ function remoteRoutes({ requireApiKey, requireTeam, clientIp }) {
     keyGenerator: clientIp,
     handler: (req, res) => res.status(429).json({ error: 'Too many requests' }),
   });
-  router.use(limiter, requireApiKey, requireTeam, express.json({ limit: '200kb' }));
+  router.use(limiter, requireApiKey, requireTeam, express.json({ limit: '500kb' }));
 
   // The code has to be a live session of the key making the request.
   const own = (req, res, next) => {

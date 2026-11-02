@@ -12,7 +12,8 @@
     target: null,      // the marked element
     targetLabel: '',
     busy: false,
-    remote: null,      // auto mode: { code, until, count } while it is on
+    remote: null,      // auto mode: { code, until, count, act, presses, typed, last } while it is on
+    allowAct: false,   // the author's tick for the next auto mode: the chat may press buttons and type in the question box
     status: '',
     statusKind: '',    // 'ok' or 'bad'
   };

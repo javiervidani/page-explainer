@@ -34,6 +34,7 @@
     .banner .code { font-size: 20px; letter-spacing: 3px; background: #fff; color: #b3261e; border-radius: 8px; padding: 0 8px; }
     .banner .stop { border: 0; border-radius: 8px; background: #fff; color: #b3261e; font: inherit; font-weight: 700; padding: 4px 12px; cursor: pointer; }
     .auto { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #c9b9a8; }
+    .auto .tick { display: block; margin: 6px 0; font-size: 14px; cursor: pointer; }
     .auto button { width: 100%; padding: 8px; border-radius: 10px; border: 2px solid #b3261e; background: #fff; color: #b3261e; font: inherit; cursor: pointer; }
     .spot { position: fixed; z-index: 2147483645; pointer-events: none; border: 5px solid #ffcc00; border-radius: 14px;
       box-shadow: 0 0 0 9999px rgba(0,0,0,.35), 0 0 18px 6px rgba(255,204,0,.8); }

@@ -19,13 +19,13 @@
   }
 
   // The first name that matches wins; an exact name beats a name that only contains the words.
-  function find(names, scope) {
+  function find(names, scope, exact) {
     const all = [...document.body.querySelectorAll(NAMED)].filter((e) => !LM.ui.host.contains(e) && isShown(e));
     const labels = new Map(all.map((e) => [e, norm(labelOf(e))]));
     for (const name of names) {
       const want = norm(name);
       if (!want) continue;
-      const hit = all.find((e) => labels.get(e) === want) || all.find((e) => labels.get(e).length <= 60 && labels.get(e).includes(want));
+      const hit = all.find((e) => labels.get(e) === want) || (exact ? null : all.find((e) => labels.get(e).length <= 60 && labels.get(e).includes(want)));
       if (hit) return { el: scope === 'panel' ? panelOf(hit) : hit, name };
     }
     return null;

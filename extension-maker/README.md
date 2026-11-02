@@ -44,8 +44,9 @@ notebooks where you can.
 ## Auto mode (a chat marks and saves the screens)
 
 The button "🤖 מצב אוטומטי" in the panel lets a chat (Claude with the PageLens connector and a **team** key) ask this page for
-two things only: the button and panel names on screen (`remote_labels`), and "mark this button and save the screen"
-(`remote_capture`). It **never clicks or types**: you open each screen, the chat asks for one picture per screen.
+to mark and save screens (`remote_labels`, `remote_capture`) and to read the page text (`remote_text`). By default it **never clicks
+or types**: you open each screen. If you tick **"גם ללחוץ על כפתורים ולהקליד בתיבת השאלה"** before starting, the chat may also
+press one button at a time (`remote_press`) and type in the question box (`remote_type`), with the limits below.
 
 - You turn it on each time. A red banner at the top shows a 6-digit **code**, the time left and a stop button.
 - Tell the chat the code. Without it nothing works, and the code only lives while auto mode is on.

@@ -12,6 +12,7 @@ const { registerListCaptures } = require('./tools/listCaptures');
 const { registerGetCapture } = require('./tools/getCapture');
 const { registerRemoteCapture } = require('./tools/remoteCapture');
 const { registerLessonFromCaptures } = require('./tools/lessonFromCaptures');
+const { registerRemoteAct } = require('./tools/remoteAct');
 
 // `ctx` says who is calling: { keyLabel, ip }. It only goes into the usage log.
 function createMcpServer(ctx = {}) {
@@ -23,6 +24,7 @@ function createMcpServer(ctx = {}) {
     registerListCaptures(server);
     registerGetCapture(server);
     registerRemoteCapture(server);
+    registerRemoteAct(server);
     registerLessonFromCaptures(server);
   }
   return server;

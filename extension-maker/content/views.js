@@ -41,7 +41,10 @@
 
     panel.append(h('div', { class: 'auto' },
       h('button', { disabled: s.busy, onclick: () => (s.remote ? LM.remote.stop() : LM.remote.start()) }, s.remote ? '⏹ עצור מצב אוטומטי' : '🤖 מצב אוטומטי (שיחה מסמנת ושומרת)'),
-      s.remote ? null : h('p', { class: 'hint' }, 'מאפשר לשיחה עם Claude לבקש ממני לבחור כפתור ולשמור את המסך. בלי ללחוץ ובלי להקליד. עד 30 דקות, ותראו כאן למעלה פס אדום עם כפתור עצירה.'),
+      s.remote ? null : h('label', { class: 'tick' },
+        h('input', { type: 'checkbox', checked: s.allowAct, onchange: (e) => { s.allowAct = e.target.checked; } }),
+        ' גם ללחוץ על כפתורים ולהקליד בתיבת השאלה (רק מה שביקשתי)'),
+      s.remote ? null : h('p', { class: 'hint' }, 'מאפשר לשיחה עם Claude לבקש ממני לבחור כפתור ולשמור את המסך. בלי ללחוץ ובלי להקליד, אלא אם סימנתם למעלה. עד 30 דקות, ותראו כאן למעלה פס אדום עם כפתור עצירה.'),
     ));
     panel.append(h('button', { class: 'icon', title: 'להעתיק יומן תקלות', onclick: () => LM.logCopy() }, '📋 יומן'));
     panel.append(h('button', { class: 'save', disabled: s.busy, onclick: () => a.save() }, s.busy ? 'שומר...' : '📸 שמור מסך'));

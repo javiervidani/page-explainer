@@ -38,7 +38,8 @@
   function paint() {
     if (!s.remote) return;
     timeEl.textContent = document.hidden ? `${minutes(s.remote.until - Date.now())} (הלשונית ברקע)` : minutes(s.remote.until - Date.now());
-    countEl.textContent = s.remote.count ? `· ${s.remote.count} בקשות` : '';
+    const r = s.remote;
+    countEl.textContent = [r.count ? `${r.count} בקשות` : '', r.act ? `✋ לחיצה והקלדה מותרות (${r.presses} לחיצות)` : '', r.last].filter(Boolean).join(' · ');
   }
 
   async function start() {
@@ -52,7 +53,7 @@
       LM.actions.setStatus((r && r.error) || 'לא הצלחתי להפעיל.', 'bad');
       return LM.views.render();
     }
-    const run = (s.remote = { code: r.code, until: r.armedUntil, count: 0 });
+    const run = (s.remote = { code: r.code, until: r.armedUntil, count: 0, act: s.allowAct, presses: 0, typed: 0, typedAt: 0, last: '' });
     buildBanner(run);
     paint();
     timer = setInterval(() => (Date.now() >= run.until ? stop('עברו 30 דקות, המצב האוטומטי נעצר.') : paint()), 1000);
@@ -92,6 +93,9 @@
     if (document.hidden) return { ok: false, error: 'הלשונית של המחברת ברקע. בקשו מהכותב להעביר אותה לחזית.' };
     if (cmd.type === 'labels') return { ok: true, labels: LM.labels.collectLabels(), page: location.hostname };
     if (cmd.type === 'capture') return captureAll(cmd.args);
+    if (cmd.type === 'text') return LM.act.readText(cmd.args);
+    if (cmd.type === 'press') return LM.act.press(cmd.args);
+    if (cmd.type === 'type') return LM.act.type(cmd.args);
     return { ok: false, error: 'unknown command' };
   }
 
@@ -121,5 +125,5 @@
     return r && r.ok ? { ok: true, id: r.id, marked } : { ok: false, error: (r && r.error) || 'The extension could not save the screen.' };
   }
 
-  LM.remote = { start, stop };
+  LM.remote = { start, stop, paint };
 })();

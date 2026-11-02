@@ -1,5 +1,6 @@
 // The commands a chat sends to the armed extension, and the answers. One file per command and per answer.
-// Only two kinds exist, and neither clicks or types: "labels" (names visible on screen) and "capture" (mark a button, save the screen).
+// Kinds: "labels" (names visible on screen), "capture" (mark a button, save the screen), "text" (read the page text), and, only when the
+// author ticked "allow" in the extension, "press" (one button by its exact name) and "type" (into the notebook's question box). The extension decides.
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -14,6 +15,17 @@ const str = (v, max) => String(v ?? '').trim().slice(0, max);
 // Checks and cleans what a chat asked for. Throws RemoteError(400) when it is not allowed.
 function cleanCommand(type, args = {}) {
   if (type === 'labels') return {};
+  if (type === 'text') return { find: (Array.isArray(args.find) ? args.find : []).map((f) => str(f, 40)).filter(Boolean).slice(0, 5) };
+  if (type === 'press') {
+    const name = str(args.name, 60);
+    if (!name) throw new RemoteError('name: the exact name of the button is required', 400);
+    return { name };
+  }
+  if (type === 'type') {
+    const text = str(args.text, 500);
+    if (!text) throw new RemoteError('text: what to type is required', 400);
+    return { text };
+  }
   if (type !== 'capture') throw new RemoteError('unknown command', 400);
   const project = str(args.project, 40).replace(/[^\p{L}\p{N} ._-]/gu, '').trim();
   if (!project) throw new RemoteError('project: a name is required', 400);
