@@ -1,4 +1,4 @@
-// Tools remote_text, remote_press and remote_type (team keys only), for the author's team extension while auto mode is on.
+// Tools remote_text, remote_press, remote_key and remote_type (team keys only), for the author's team extension while auto mode is on.
 // Reading the text needs only the 6-digit code. Pressing and typing also need the author's tick in the extension, and the extension
 // refuses what is on its block list. Nothing here is ever done without the author having started auto mode on that screen.
 const { z } = require('zod');
@@ -42,6 +42,20 @@ function registerRemoteAct(server) {
       inputSchema: { code, name: z.string().min(1).max(60).describe('The exact name of the button, as remote_labels shows it') },
     },
     ({ code: c, name }) => ask(c, 'press', { name })
+  );
+
+  server.registerTool(
+    'remote_key',
+    {
+      title: 'Next or previous slide in the author\'s open presentation (auto mode)',
+      description:
+        'Sends the Right arrow (direction "next") or the Left arrow ("previous") to the page, to change the slide of a presentation that ' +
+        'the author opened and started (slideshow). No other key can be sent. Works only while the page shows "סגירת המצגת" and the ' +
+        'author ticked "allow pressing and typing". `times` 1 to 5 (default 1); at most 60 key presses per session. Check the result ' +
+        'with remote_capture. Needs the code.',
+      inputSchema: { code, direction: z.enum(['next', 'previous']), times: z.number().int().min(1).max(5).optional() },
+    },
+    ({ code: c, direction, times }) => ask(c, 'key', { direction, times })
   );
 
   server.registerTool(

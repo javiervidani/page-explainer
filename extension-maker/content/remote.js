@@ -96,6 +96,7 @@
     if (cmd.type === 'text') return LM.act.readText(cmd.args);
     if (cmd.type === 'press') return LM.act.press(cmd.args);
     if (cmd.type === 'type') return LM.act.type(cmd.args);
+    if (cmd.type === 'key') return LM.act.pressKey(cmd.args);
     return { ok: false, error: 'unknown command' };
   }
 

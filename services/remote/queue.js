@@ -1,6 +1,6 @@
 // The commands a chat sends to the armed extension, and the answers. One file per command and per answer.
 // Kinds: "labels" (names visible on screen), "capture" (mark a button, save the screen), "text" (read the page text), and, only when the
-// author ticked "allow" in the extension, "press" (one button by its exact name) and "type" (into the notebook's question box). The extension decides.
+// author ticked "allow" in the extension, "press" (one button by its exact name), "key" (Right or Left arrow, in a presentation) and "type" (into the notebook's question box). The extension decides.
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -20,6 +20,10 @@ function cleanCommand(type, args = {}) {
     const name = str(args.name, 60);
     if (!name) throw new RemoteError('name: the exact name of the button is required', 400);
     return { name };
+  }
+  if (type === 'key') {
+    if (!['next', 'previous'].includes(args.direction)) throw new RemoteError('direction: "next" or "previous"', 400);
+    return { direction: args.direction, times: Math.min(Math.max(Math.round(Number(args.times)) || 1, 1), 5) };
   }
   if (type === 'type') {
     const text = str(args.text, 500);

@@ -90,5 +90,28 @@
     return { ok: true, typed: value.length };
   }
 
-  LM.act = { readText, press, type, MAX_PRESSES };
+  // Arrow keys only, and only while a presentation is open on screen (its "close" button is there). A slideshow changes slide on
+  // these keys, and a chat cannot press them by hand. No other key can be sent.
+  const KEYS = { next: { key: 'ArrowRight', code: 'ArrowRight', keyCode: 39 }, previous: { key: 'ArrowLeft', code: 'ArrowLeft', keyCode: 37 } };
+  const MAX_KEYS = 60;
+  async function pressKey({ direction, times }) {
+    if (!s.remote.act) return off;
+    const k = KEYS[direction];
+    if (!k) return { ok: false, error: 'direction must be "next" or "previous"' };
+    if (!LM.finder.find(['סגירת המצגת'], 'element', true)) return { ok: false, error: 'Arrow keys work only while a presentation is open (the page must show "סגירת המצגת").' };
+    const n = Math.min(Math.max(Number(times) || 1, 1), 5);
+    if ((s.remote.keys || 0) + n > MAX_KEYS) return { ok: false, error: `This session reached its limit of ${MAX_KEYS} arrow key presses.` };
+    const target = document.activeElement || document.body;
+    for (let i = 0; i < n; i++) {
+      for (const type of ['keydown', 'keyup']) {
+        target.dispatchEvent(new KeyboardEvent(type, { ...k, which: k.keyCode, bubbles: true, cancelable: true, composed: true }));
+      }
+      await sleep(500);
+    }
+    s.remote.keys = (s.remote.keys || 0) + n;
+    noteLast(`חץ: ${direction === 'next' ? 'הבא' : 'הקודם'} ×${n}`);
+    return { ok: true, key: k.key, times: n };
+  }
+
+  LM.act = { readText, press, type, pressKey, MAX_PRESSES };
 })();
