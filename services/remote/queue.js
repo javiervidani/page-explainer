@@ -21,6 +21,11 @@ function cleanCommand(type, args = {}) {
     if (!name) throw new RemoteError('name: the exact name of the button is required', 400);
     return { name };
   }
+  if (type === 'sourcetext') {
+    const text = str(args.text, 4000);
+    if (!text) throw new RemoteError('text: what to put in the source is required', 400);
+    return { text };
+  }
   if (type === 'key') {
     if (!['next', 'previous'].includes(args.direction)) throw new RemoteError('direction: "next" or "previous"', 400);
     return { direction: args.direction, times: Math.min(Math.max(Math.round(Number(args.times)) || 1, 1), 5) };

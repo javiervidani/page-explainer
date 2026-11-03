@@ -59,6 +59,7 @@ press one button at a time (`remote_press`) and type in the question box (`remot
   (`התיבה להזנת שאילתה`) and nothing else (20 per session). Sending is a press of `שליחה`, allowed only right after a typed text, once.
   The extension refuses these, so the author does them by hand: delete, remove, share, settings, sign out, the good/bad feedback buttons and "new notebook".
   The banner shows each press and what was typed.
+- `remote_source_text({ code, text })` types up to 4000 characters into the paste-text box of the open "add source" window, and nowhere else (the window is the last open dialog and the box must be named like a paste-text box; if not found, the error lists the boxes). Flow: `remote_press` "הוספת מקור", the paste-text option, `remote_source_text`, then the window's add button. Counts toward the 20 typed texts.
 - `remote_key({ code, direction: "next" | "previous", times? })` sends the Right or Left arrow (nothing else) to change the slide while a presentation is open
   (the page must show `סגירת המצגת`). Needs the tick; 60 key presses per session. The author starts the slideshow with a real click (full screen needs one).
 

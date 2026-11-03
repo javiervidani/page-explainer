@@ -66,15 +66,9 @@
   }
 
   // Types into the notebook's question box only. It does not send: that is a separate press of "שליחה".
-  async function type({ text }) {
-    if (!s.remote.act) return off;
-    if (s.remote.typed >= MAX_TYPED) return { ok: false, error: `This session reached its limit of ${MAX_TYPED} typed texts.` };
-    const box = LM.finder.find([QUESTION_BOX], 'element', true);
-    const el = box && box.el;
-    if (!el || !el.matches('textarea,input,[contenteditable],[role=textbox]')) return { ok: false, error: 'The notebook question box is not on screen.' };
-    const value = String(text || '').slice(0, MAX_TEXT);
+  // Typed like a keyboard does (select what is there, insert the new text), so the page's own code notices it and wakes its buttons.
+  async function fill(el, value) {
     el.focus();
-    // Typed like a keyboard does (select what is there, insert the new text), so the page's own code notices it and wakes its send button.
     if (el.matches('textarea,input')) el.select();
     else document.getSelection().selectAllChildren(el);
     const inserted = document.execCommand('insertText', false, value);
@@ -83,10 +77,42 @@
       Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value);
       el.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    await sleep(300); // the page may enable its send button a moment later
+    await sleep(300); // the page may enable its buttons a moment later
+  }
+
+  async function type({ text }) {
+    if (!s.remote.act) return off;
+    if (s.remote.typed >= MAX_TYPED) return { ok: false, error: `This session reached its limit of ${MAX_TYPED} typed texts.` };
+    const box = LM.finder.find([QUESTION_BOX], 'element', true);
+    const el = box && box.el;
+    if (!el || !el.matches('textarea,input,[contenteditable],[role=textbox]')) return { ok: false, error: 'The notebook question box is not on screen.' };
+    const value = String(text || '').slice(0, MAX_TEXT);
+    await fill(el, value);
     s.remote.typed++;
     s.remote.typedAt = Date.now();
     noteLast(`הוקלד בתיבת השאלה: ${value.slice(0, 40)}${value.length > 40 ? '…' : ''}`);
+    return { ok: true, typed: value.length };
+  }
+
+  // Text for a new source: typed only into the paste-text box of the open "add source" window, never anywhere else on the page.
+  // The window is the last open dialog; its box must be named like a paste-text box. If it is not found, the names of the boxes
+  // in the dialog are returned, so the rule can be adjusted without guessing.
+  const MAX_SOURCE_TEXT = 4000;
+  const SOURCE_HINTS = ['הדבק', 'הדבקת', 'טקסט', 'paste', 'text'];
+  async function typeSource({ text }) {
+    if (!s.remote.act) return off;
+    if (s.remote.typed >= MAX_TYPED) return { ok: false, error: `This session reached its limit of ${MAX_TYPED} typed texts.` };
+    const dialogs = [...document.querySelectorAll('[role=dialog],[aria-modal=true],mat-dialog-container,.mat-mdc-dialog-container')].filter(LM.util.isShown);
+    const dialog = dialogs[dialogs.length - 1];
+    if (!dialog) return { ok: false, error: 'No window is open. Press "הוספת מקור" and the paste-text option first.' };
+    const boxes = [...dialog.querySelectorAll('textarea,input:not([type=checkbox]):not([type=radio]):not([type=file]),[contenteditable=true],[role=textbox]')].filter(LM.util.isShown);
+    const nameOf = (el) => LM.util.labelOf(el) + ' ' + (el.getAttribute('placeholder') || '');
+    const hits = boxes.filter((el) => SOURCE_HINTS.some((w) => nameOf(el).toLowerCase().includes(w)));
+    if (hits.length !== 1) return { ok: false, error: hits.length ? 'More than one paste-text box in the window.' : 'No paste-text box found in the open window.', boxes: boxes.map(nameOf).map((n) => LM.util.clean(n)).slice(0, 10) };
+    const value = String(text || '').slice(0, MAX_SOURCE_TEXT);
+    await fill(hits[0], value);
+    s.remote.typed++;
+    noteLast(`הוקלד מקור: ${value.slice(0, 40)}${value.length > 40 ? '…' : ''}`);
     return { ok: true, typed: value.length };
   }
 
@@ -113,5 +139,5 @@
     return { ok: true, key: k.key, times: n };
   }
 
-  LM.act = { readText, press, type, pressKey, MAX_PRESSES };
+  LM.act = { readText, press, type, typeSource, pressKey, MAX_PRESSES };
 })();

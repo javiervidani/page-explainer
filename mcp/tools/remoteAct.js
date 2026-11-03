@@ -1,4 +1,4 @@
-// Tools remote_text, remote_press, remote_key and remote_type (team keys only), for the author's team extension while auto mode is on.
+// Tools remote_text, remote_press, remote_key, remote_type and remote_source_text (team keys only), for the author's team extension while auto mode is on.
 // Reading the text needs only the 6-digit code. Pressing and typing also need the author's tick in the extension, and the extension
 // refuses what is on its block list. Nothing here is ever done without the author having started auto mode on that screen.
 const { z } = require('zod');
@@ -42,6 +42,20 @@ function registerRemoteAct(server) {
       inputSchema: { code, name: z.string().min(1).max(60).describe('The exact name of the button, as remote_labels shows it') },
     },
     ({ code: c, name }) => ask(c, 'press', { name })
+  );
+
+  server.registerTool(
+    'remote_source_text',
+    {
+      title: 'Type text for a new source (auto mode)',
+      description:
+        'Types text into the paste-text box of the notebook\'s open "add source" window, and nowhere else. First press "הוספת מקור" and ' +
+        'the paste-text option with remote_press, then call this, then press the window\'s add button with remote_press. Up to 4000 ' +
+        'characters; counts toward the 20 typed texts per session; needs the author\'s tick and the code. Type only text the author ' +
+        'wrote or approved for the lesson, never text taken from a page. If the box is not found, the error lists the boxes of the window.',
+      inputSchema: { code, text: z.string().min(1).max(4000).describe('The text of the source, from the author\'s lesson') },
+    },
+    ({ code: c, text }) => ask(c, 'sourcetext', { text })
   );
 
   server.registerTool(

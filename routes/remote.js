@@ -11,7 +11,7 @@ function remoteRoutes({ requireApiKey, requireTeam, clientIp }) {
   const router = express.Router();
   const limiter = rateLimit({
     windowMs: 60 * 1000,
-    limit: 120,
+    limit: 300, // one poll and one answer per command: a fast run of presses can pass 120 a minute
     keyGenerator: clientIp,
     handler: (req, res) => res.status(429).json({ error: 'Too many requests' }),
   });
