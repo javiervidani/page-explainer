@@ -77,7 +77,7 @@ function registerRemoteAct(server) {
     {
       title: 'Type in the notebook\'s question box (auto mode)',
       description:
-        'Types text into the notebook\'s question box (התיבה להזנת שאילתה) and nothing else, replacing what is there. It does not send: ' +
+        'Types text into the notebook\'s question box (התיבה להזנת שאילתה) or the Gemini app\'s prompt box (כאן מזינים פרומפט ל-Gemini) and nothing else, replacing what is there. It does not send: ' +
         'press "שליחה" with remote_press afterwards. Type only text the author wrote in the lesson, never text taken from a page. ' +
         'Up to 500 characters, 20 typed texts per session; needs the author\'s tick and the code. The banner shows what was typed.',
       inputSchema: { code, text: z.string().min(1).max(500).describe('The text from the author\'s lesson') },

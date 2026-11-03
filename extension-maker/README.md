@@ -56,7 +56,7 @@ press one button at a time (`remote_press`) and type in the question box (`remot
 - `remote_text({ code, find? })` returns the text of the page (up to 100,000 characters) and its headings. It is private content: it only goes to the chat that has the code.
 - With the tick (the banner shows "✋ לחיצה והקלדה מותרות"): `remote_press({ code, name })` presses one button by its **exact** name (30 per session)
   and returns the names on screen afterwards. `remote_type({ code, text })` types up to 500 characters into the notebook's question box
-  (`התיבה להזנת שאילתה`) and nothing else (20 per session). Sending is a press of `שליחה`, allowed only right after a typed text, once.
+  (`התיבה להזנת שאילתה`) or the Gemini app's prompt box (`כאן מזינים פרומפט ל-Gemini`) and nothing else (20 per session). Sending is a press of `שליחה`, allowed only right after a typed text, once.
   The extension refuses these, so the author does them by hand: delete, remove, share, settings, sign out, the good/bad feedback buttons and "new notebook".
   The banner shows each press and what was typed.
 - `remote_source_text({ code, text })` types up to 4000 characters into the paste-text box of the open "add source" window, and nowhere else (the window is the last open dialog and the box must be named like a paste-text box; if not found, the error lists the boxes). Flow: `remote_press` "הוספת מקור", the paste-text option, `remote_source_text`, then the window's add button. Counts toward the 20 typed texts.

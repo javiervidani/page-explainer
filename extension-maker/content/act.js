@@ -12,8 +12,20 @@
   const MAX_PAGE_TEXT = 100000;
   const BLOCKED = ['מחיק', 'מחק', 'הסר', 'שיתוף', 'שתף', 'הגדרות', 'התנתק', 'יציאה', 'יצירת notebook', 'הסיכום טוב', 'הסיכום לא טוב',
     'delete', 'remove', 'share', 'settings', 'sign out', 'log out', 'feedback'];
-  const QUESTION_BOX = 'התיבה להזנת שאילתה';
-  const SEND = 'שליחה';
+  // The question box of the notebook, and the prompt box of the Gemini app. Typing goes only to one of these.
+  const QUESTION_BOXES = ['התיבה להזנת שאילתה', 'כאן מזינים פרומפט ל-Gemini'];
+  const SEND_NAMES = ['שליחה', 'שליחת הודעה', 'send message'];
+  const findQuestionBox = () => {
+    for (const name of QUESTION_BOXES) {
+      const hit = LM.finder.find([name], 'element', true);
+      if (!hit) continue;
+      // the name may sit on a wrapper: the box to type in is the editable part inside it
+      const el = hit.el.matches('textarea,input,[contenteditable=true],[contenteditable=plaintext-only],[role=textbox]')
+        ? hit.el : hit.el.querySelector('textarea,input,[contenteditable=true],[contenteditable=plaintext-only],[role=textbox]');
+      if (el) return { el };
+    }
+    return null;
+  };
 
   const off = { ok: false, error: 'Pressing and typing are off in this session. Ask the author to tick "allow pressing and typing" and start auto mode again.' };
   const noteLast = (text) => { s.remote.last = text; if (LM.remote && LM.remote.paint) LM.remote.paint(); };
@@ -40,8 +52,8 @@
     if (!hit) return { ok: false, error: `No button with exactly the name "${name}" on screen. Use remote_labels to see the names.` };
     const label = LM.util.labelOf(hit.el);
     if (isBlocked(label)) return { ok: false, error: `"${label}" is on the block list. The author must press it by hand.` };
-    const isSend = label === SEND || name === SEND;
-    if (isSend && !(s.remote.typedAt && Date.now() - s.remote.typedAt < 120000)) return { ok: false, error: 'Send is allowed only right after remote_type put text in the question box.' };
+    const isSend = SEND_NAMES.includes(label.toLowerCase()) || SEND_NAMES.includes(name.toLowerCase());
+    if (isSend && !(s.remote.typedAt && Date.now() - s.remote.typedAt < 120000)) return { ok: false, error: 'Send is allowed only right after remote_type put text in the question or prompt box.' };
     if (hit.el.disabled || hit.el.getAttribute('aria-disabled') === 'true') return { ok: false, error: `"${label}" is disabled right now.` };
     hit.el.scrollIntoView({ block: 'nearest' });
     for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup']) hit.el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
@@ -54,7 +66,7 @@
     const info = { tag: hit.el.tagName.toLowerCase(), disabled: !!hit.el.disabled, ariaDisabled: hit.el.getAttribute('aria-disabled'), box: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)] };
     if (!isSend) return { ok: true, pressed: label, labels: LM.labels.collectLabels(), element: info };
     // Sending: if the text is still in the box, the click did not send it. Try the Enter key, as a person could.
-    const box = LM.finder.find([QUESTION_BOX], 'element', true);
+    const box = findQuestionBox();
     const left = () => (box && box.el ? String(box.el.value ?? box.el.innerText ?? '').trim().length : 0);
     let sentBy = left() ? 'none' : 'click';
     if (sentBy === 'none') {
@@ -83,9 +95,9 @@
   async function type({ text }) {
     if (!s.remote.act) return off;
     if (s.remote.typed >= MAX_TYPED) return { ok: false, error: `This session reached its limit of ${MAX_TYPED} typed texts.` };
-    const box = LM.finder.find([QUESTION_BOX], 'element', true);
+    const box = findQuestionBox();
     const el = box && box.el;
-    if (!el || !el.matches('textarea,input,[contenteditable],[role=textbox]')) return { ok: false, error: 'The notebook question box is not on screen.' };
+    if (!el) return { ok: false, error: 'The question box (notebook) or prompt box (Gemini) is not on screen.' };
     const value = String(text || '').slice(0, MAX_TEXT);
     await fill(el, value);
     s.remote.typed++;
