@@ -50,7 +50,19 @@
     if (isSend) s.remote.typedAt = 0;
     noteLast(`לחיצה: ${label}`);
     await sleep(800); // let the page react before the names are read again
-    return { ok: true, pressed: label, labels: LM.labels.collectLabels() };
+    const r = hit.el.getBoundingClientRect();
+    const info = { tag: hit.el.tagName.toLowerCase(), disabled: !!hit.el.disabled, ariaDisabled: hit.el.getAttribute('aria-disabled'), box: [Math.round(r.x), Math.round(r.y), Math.round(r.width), Math.round(r.height)] };
+    if (!isSend) return { ok: true, pressed: label, labels: LM.labels.collectLabels(), element: info };
+    // Sending: if the text is still in the box, the click did not send it. Try the Enter key, as a person could.
+    const box = LM.finder.find([QUESTION_BOX], 'element', true);
+    const left = () => (box && box.el ? String(box.el.value ?? box.el.innerText ?? '').trim().length : 0);
+    let sentBy = left() ? 'none' : 'click';
+    if (sentBy === 'none') {
+      for (const type of ['keydown', 'keypress', 'keyup']) box.el.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true }));
+      await sleep(800);
+      sentBy = left() ? 'none' : 'enter';
+    }
+    return { ok: true, pressed: label, sentBy, textLeftInBox: left(), element: info, labels: LM.labels.collectLabels() };
   }
 
   // Types into the notebook's question box only. It does not send: that is a separate press of "שליחה".
