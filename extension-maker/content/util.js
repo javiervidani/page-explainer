@@ -33,6 +33,9 @@
     if (text && text.length <= 60) return text;
     const heading = el.querySelector('h1,h2,h3,h4,[role=heading]');
     if (heading && clean(heading.textContent)) return clean(heading.textContent).slice(0, 60);
+    // A button with no text of its own (a list item made of a stretched button, for example) can still carry a short description.
+    const described = clean(el.getAttribute('aria-description'));
+    if (described && described.length <= 60) return described;
     return el.tagName.toLowerCase();
   }
 
