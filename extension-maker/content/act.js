@@ -44,6 +44,7 @@
     if (isSend && !(s.remote.typedAt && Date.now() - s.remote.typedAt < 120000)) return { ok: false, error: 'Send is allowed only right after remote_type put text in the question box.' };
     if (hit.el.disabled || hit.el.getAttribute('aria-disabled') === 'true') return { ok: false, error: `"${label}" is disabled right now.` };
     hit.el.scrollIntoView({ block: 'nearest' });
+    for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup']) hit.el.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
     hit.el.click();
     s.remote.presses++;
     if (isSend) s.remote.typedAt = 0;
@@ -61,14 +62,16 @@
     if (!el || !el.matches('textarea,input,[contenteditable],[role=textbox]')) return { ok: false, error: 'The notebook question box is not on screen.' };
     const value = String(text || '').slice(0, MAX_TEXT);
     el.focus();
-    if (el.matches('textarea,input')) {
+    // Typed like a keyboard does (select what is there, insert the new text), so the page's own code notices it and wakes its send button.
+    if (el.matches('textarea,input')) el.select();
+    else document.getSelection().selectAllChildren(el);
+    const inserted = document.execCommand('insertText', false, value);
+    if (!inserted && el.matches('textarea,input')) { // an older way, if the browser refused
       const proto = el.matches('textarea') ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
       Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, value);
       el.dispatchEvent(new Event('input', { bubbles: true }));
-    } else {
-      document.getSelection().selectAllChildren(el);
-      document.execCommand('insertText', false, value);
     }
+    await sleep(300); // the page may enable its send button a moment later
     s.remote.typed++;
     s.remote.typedAt = Date.now();
     noteLast(`הוקלד בתיבת השאלה: ${value.slice(0, 40)}${value.length > 40 ? '…' : ''}`);
