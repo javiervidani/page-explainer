@@ -7,7 +7,7 @@ const { BASE_URL } = require('../fields');
 const { LINK_SECONDS, asText } = require('./listCaptures');
 
 const NOTEBOOK_HOSTS = ['notebook.google.com', 'notebooklm.google.com'];
-const sourceOf = (page) => (page && NOTEBOOK_HOSTS.includes(page.host) ? 'Gemini Notebook' : (page && page.host) || '');
+const sourceOf = (page) => (page && NOTEBOOK_HOSTS.includes(page.host) ? 'Gemini Notebook' : page && page.host === 'gemini.google.com' ? 'Gemini' : (page && page.host) || '');
 
 function registerLessonFromCaptures(server) {
   server.registerTool(

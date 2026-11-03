@@ -1,6 +1,6 @@
 # מכין השיעורים (Lesson Maker), Chrome and Edge extension for the team
 
-For the team that builds lessons for the kids. On NotebookLM (`notebooklm.google.com`, `notebook.google.com`) you
+For the team that builds lessons for the kids. On NotebookLM (`notebooklm.google.com`, `notebook.google.com`) and the Gemini chat app (`gemini.google.com/app`) you
 **mark a button**, write a note, and **save the screen** to PageLens. The saved picture has the yellow frame on the
 marked button. Later, in a chat, Claude reads the saved screens and builds the lesson (see `docs/lesson-maker.md`).
 

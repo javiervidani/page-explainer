@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "מכין השיעורים (לצוות)",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "לצוות: מסמנים כפתור במסך, שומרים את המסך ב-PageLens, ומכינים ממנו שיעור לילדים.",
   "permissions": [
     "storage",
@@ -10,6 +10,7 @@
   "host_permissions": [
     "https://notebooklm.google.com/*",
     "https://notebook.google.com/*",
+    "https://gemini.google.com/*",
     "https://pagelens.datashellv.com/*"
   ],
   "optional_host_permissions": [
@@ -27,7 +28,8 @@
     {
       "matches": [
         "https://notebooklm.google.com/*",
-        "https://notebook.google.com/*"
+        "https://notebook.google.com/*",
+        "https://gemini.google.com/app*"
       ],
       "js": [
         "content/util.js",
