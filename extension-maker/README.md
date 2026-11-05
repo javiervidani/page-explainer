@@ -4,6 +4,9 @@ For the team that builds lessons for the kids. On NotebookLM (`notebooklm.google
 **mark a button**, write a note, and **save the screen** to PageLens. The saved picture has the yellow frame on the
 marked button. Later, in a chat, Claude reads the saved screens and builds the lesson (see `docs/lesson-maker.md`).
 
+**Sites (0.8.0):** the panel and auto mode also load on `claude.ai`, `kidgeni.com`, `fliki.ai` and `scratch.mit.edu`, for screens of those tools. Capture and reading work there; typing stays limited to the notebook question box and the Gemini prompt box. Use it only on a clean screen: a saved screen goes to PageLens.
+
+
 This extension is separate from the kids' extension (`extension/`). The kids' one has no upload code and no keys.
 
 ## Install (team computers)
