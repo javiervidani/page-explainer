@@ -2,7 +2,7 @@
 // The upload is made here (not in the page) so the page can never see the key.
 importScripts('log.js', 'remote.js'); // the log, then auto mode (the calls to the server)
 
-const SITES = ['notebooklm.google.com', 'notebook.google.com', 'gemini.google.com', 'claude.ai', 'kidgeni.com', 'fliki.ai', 'scratch.mit.edu']; // the panel only loads on these pages (Gemini: /app); subdomains below
+const SITES = ['notebooklm.google.com', 'notebook.google.com', 'gemini.google.com', 'claude.ai', 'kidgeni.com', 'fliki.ai', 'scratch.mit.edu', 'solisale.com']; // the panel only loads on these pages (Gemini: /app); subdomains below
 const onSite = (host) => SITES.some((s) => host === s || host.endsWith('.' + s));
 
 // captureVisibleTab photographs whatever tab is in front, so first make sure that is the notebook tab that asked.

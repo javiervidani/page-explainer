@@ -82,6 +82,13 @@ Open
 - [ ] Decide whether the Talkdeck player and the extension should also follow each other live (needs the player to report the current slide and accept "go to slide"; Google's page may refuse to show an outside player, so a lesson pack is the safer way)
 - [ ] Decide what happens when the child does something different from the lesson (wait, skip, or ask)
 
+## Later: publish lessons to WordPress sites
+Idea (2026-11-10, from the owner): an option to connect WP websites such as `solisale.com` and publish Talkdeck lessons there. Not started; decide with the Pi chat, which owns Talkdeck and its WordPress plugin.
+- [ ] Decide the path: a Talkdeck lesson embedded by a WP plugin or shortcode (lesson link or iframe), or the finished MP4 uploaded to the WP media library
+- [ ] Connection and permissions: WP application password per site, stored only on the Pi, never in git; which user role may publish
+- [ ] Per-site settings (site address, post type or page, status draft first)
+- [ ] `lesson_publish` target "wp" with a dry run first, same rule as Plesk: only when the owner asks
+
 ## Later: companies (do not start)
 - [ ] Help employees with internal systems and forms (extension for logged-in internal tools, guidance on the page)
 - [ ] `page_forms` tool: every field of a form (label, required, type, help text, buttons) so a model can explain how to fill it

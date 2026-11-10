@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "מכין השיעורים (לצוות)",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "לצוות: מסמנים כפתור במסך, שומרים את המסך ב-PageLens, ומכינים ממנו שיעור לילדים.",
   "permissions": [
     "storage",
@@ -17,6 +17,8 @@
     "https://fliki.ai/*",
     "https://*.fliki.ai/*",
     "https://scratch.mit.edu/*",
+    "https://solisale.com/*",
+    "https://*.solisale.com/*",
     "https://pagelens.datashellv.com/*"
   ],
   "optional_host_permissions": [
@@ -41,7 +43,9 @@
         "https://*.kidgeni.com/*",
         "https://fliki.ai/*",
         "https://*.fliki.ai/*",
-        "https://scratch.mit.edu/*"
+        "https://scratch.mit.edu/*",
+        "https://solisale.com/*",
+        "https://*.solisale.com/*"
       ],
       "js": [
         "content/util.js",
